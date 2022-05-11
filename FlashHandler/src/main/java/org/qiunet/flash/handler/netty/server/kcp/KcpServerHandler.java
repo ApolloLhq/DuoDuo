@@ -1,6 +1,6 @@
 package org.qiunet.flash.handler.netty.server.kcp;
 
-import io.jpower.kcp.netty.UkcpChannel;
+import io.jpower.kcp.netty.UkcpServerChildChannel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import org.qiunet.flash.handler.common.enums.ServerConnType;
@@ -15,6 +15,7 @@ import org.qiunet.flash.handler.netty.server.constants.ServerConstants;
 import org.qiunet.flash.handler.netty.server.kcp.shakehands.mapping.KcpPlayerTokenMapping;
 import org.qiunet.flash.handler.netty.server.kcp.shakehands.message.KcpBindAuthReq;
 import org.qiunet.flash.handler.netty.server.kcp.shakehands.message.KcpBindAuthRsp;
+import org.qiunet.flash.handler.netty.server.kcp.shakehands.message.KcpConnectRsp;
 import org.qiunet.flash.handler.netty.server.param.KcpBootstrapParams;
 import org.qiunet.flash.handler.util.ChannelUtil;
 import org.qiunet.utils.logger.LoggerType;
@@ -66,6 +67,12 @@ public class KcpServerHandler extends SimpleChannelInboundHandler<MessageContent
 			return;
 		}
 
+		if (content.getProtocolId() == IProtocolId.System.KCP_CONNECT_REQ) {
+			ChannelUtil.getSession(ctx.channel()).sendMessage(KcpConnectRsp.valueOf(((UkcpServerChildChannel) ctx.channel()).conv()));
+			content.release();
+			return;
+		}
+
 		// 鉴权协议. 用来绑定PlayerActor
 		if (content.getProtocolId() == IProtocolId.System.KCP_BIND_AUTH_REQ) {
 			KcpBindAuthReq req = ProtobufDataManager.decode(KcpBindAuthReq.class, content.byteBuffer());
@@ -76,7 +83,8 @@ public class KcpServerHandler extends SimpleChannelInboundHandler<MessageContent
 			if (kcpParamInfo == null
 				|| ! Objects.equals(req.getToken(), kcpParamInfo.getToken())
 				|| (playerActor = UserOnlineManager.getPlayerActor(kcpParamInfo.getPlayerId())) == null
-			 	|| ((UkcpChannel) ctx.channel()).conv() != kcpParamInfo.getConvId()
+				// 客户端先不用这个.
+			 	//|| ((UkcpChannel) ctx.channel()).conv() != kcpParamInfo.getConvId()
 			) {
 				ChannelUtil.getSession(ctx.channel()).sendKcpMessage(KcpBindAuthRsp.valueOf(false));
 				ctx.channel().close();
