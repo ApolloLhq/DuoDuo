@@ -13,6 +13,11 @@ import org.qiunet.function.reward.RewardConfig;
  */
 public interface IResourceType {
 	/**
+	 * 类型的值
+	 * @return
+	 */
+	int value();
+	/**
 	 *  枚举名
 	 * @return
 	 */

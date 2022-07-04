@@ -1,6 +1,7 @@
 package org.qiunet.function.reward;
 
 import org.qiunet.function.base.IResourceType;
+import org.qiunet.function.utils.ResourceUtil;
 import org.qiunet.utils.data.IKeyValueData;
 
 import java.util.HashMap;
@@ -20,7 +21,9 @@ public final class RewardConfig extends HashMap<Object, String> implements IKeyV
 	}
 
 	public RewardConfig(String cfgId, long value) {
-		this.put("id", cfgId);
+		this.put("cfgId", cfgId);
+		this.put("type", ""+ResourceUtil.getType(cfgId).value());
+		this.put("cid", ""+ResourceUtil.getContentId(cfgId));
 		this.put("value", String.valueOf(value));
 	}
 
@@ -33,8 +36,17 @@ public final class RewardConfig extends HashMap<Object, String> implements IKeyV
 		return subTypeGetter.apply(getCfgId()).createRewardItem(this);
 	}
 
+	public int getContentId() {
+		return getInt("cid");
+	}
+
+	public int getType() {
+		return getInt("type");
+	}
+
 	public String getCfgId() {
-		return getString("id");
+		ResourceUtil.handlerResAndCfgId(this);
+		return getString("cfgId");
 	}
 
 	public long getValue() {

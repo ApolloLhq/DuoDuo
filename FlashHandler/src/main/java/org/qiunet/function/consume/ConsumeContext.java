@@ -23,7 +23,7 @@ public class ConsumeContext<Obj extends IThreadSafe> implements IArgsContainer {
 	 * 记录真实消耗.
 	 * 可能底层使用替代资源了.
 	 */
-	private final Map<BaseConsume<Obj>, Map<Integer, Long>> realConsumes = Maps.newHashMap();
+	private final Map<BaseConsume<Obj>, Map<String, Long>> realConsumes = Maps.newHashMap();
 	/**
 	 * 使用ItemId 记录的消耗数据
 	 */
@@ -96,7 +96,7 @@ public class ConsumeContext<Obj extends IThreadSafe> implements IArgsContainer {
 	 * @param consume
 	 * @return
 	 */
-	public Map<Integer, Long> getRealConsumes(BaseConsume<Obj> consume) {
+	public Map<String, Long> getRealConsumes(BaseConsume<Obj> consume) {
 		return realConsumes.computeIfAbsent(consume, key -> Maps.newHashMapWithExpectedSize(8));
 	}
 

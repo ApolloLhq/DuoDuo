@@ -1,7 +1,9 @@
 package org.qiunet.function.reward;
 
 import org.qiunet.function.base.IResourceCfg;
+import org.qiunet.function.base.IResourceType;
 import org.qiunet.function.base.basic.BasicFunctionManager;
+import org.qiunet.function.utils.ResourceUtil;
 
 /***
  * 真实奖励. 方便客户端展示
@@ -17,12 +19,20 @@ public interface IRealReward {
 	 * 没有为 0
 	 * @return
 	 */
-	int getUid();
+	String getUid();
 	/**
 	 * 配置id
 	 * @return
 	 */
 	String getCfgId();
+
+	default int getContentId() {
+		return ResourceUtil.getContentId(getCfgId());
+	}
+
+	default <T extends Enum<T> & IResourceType> T getType() {
+		return ResourceUtil.getType(getCfgId());
+	}
 
 	/**
 	 * 获得数量信息

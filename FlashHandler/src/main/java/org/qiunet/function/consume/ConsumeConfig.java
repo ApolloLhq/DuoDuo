@@ -1,6 +1,7 @@
 package org.qiunet.function.consume;
 
 import org.qiunet.function.base.IResourceType;
+import org.qiunet.function.utils.ResourceUtil;
 import org.qiunet.utils.data.IKeyValueData;
 
 import java.util.HashMap;
@@ -22,9 +23,11 @@ public class ConsumeConfig  extends HashMap<Object, String> implements IKeyValue
 	}
 
 	public ConsumeConfig(String cfgId, long value, boolean banReplace) {
-		this.put("id", cfgId);
-		this.put("value", String.valueOf(value));
+		this.put("type", ""+ResourceUtil.getType(cfgId).value());
+		this.put("cid", ""+ ResourceUtil.getContentId(cfgId));
 		this.put("banReplace", String.valueOf(banReplace));
+		this.put("value", String.valueOf(value));
+		this.put("cfgId", cfgId);
 	}
 
 	/**
@@ -36,14 +39,18 @@ public class ConsumeConfig  extends HashMap<Object, String> implements IKeyValue
 		return typeGetter.apply(getCfgId()).createConsume(this);
 	}
 
-	/**
-	 * 资源ID
-	 * @return
-	 */
-	public String getCfgId() {
-		return getString("id");
+	public int getContentId() {
+		return getInt("cid");
 	}
 
+	public int getType() {
+		return getInt("type");
+	}
+
+	public String getCfgId() {
+		ResourceUtil.handlerResAndCfgId(this);
+		return getString("cfgId");
+	}
 	/**
 	 * 数量
 	 * @return

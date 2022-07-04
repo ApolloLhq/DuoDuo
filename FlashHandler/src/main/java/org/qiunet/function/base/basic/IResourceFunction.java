@@ -24,4 +24,11 @@ public interface IResourceFunction {
 	default <Type extends Enum<Type> & IResourceType> Type getResType(String cfgId) {
 		return getResById(cfgId).type();
 	}
+
+	/**
+	 * 资源表ID 转 CfgID
+	 * @param resId
+	 * @return
+	 */
+	String getCfgIdByResId(String resId);
 }

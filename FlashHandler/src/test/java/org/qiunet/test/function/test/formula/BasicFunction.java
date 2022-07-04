@@ -18,6 +18,11 @@ public class BasicFunction implements IBasicFunction {
 	}
 
 	@Override
+	public String getCfgIdByResId(String resId) {
+		return "";
+	}
+
+	@Override
 	public <Type extends Enum<Type> & IAttrEnum<Type>> Type parse(String attrName) {
 		return (Type) FightAttrType.valueOf(attrName);
 	}

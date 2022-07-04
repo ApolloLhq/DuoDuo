@@ -23,4 +23,9 @@ public enum BasicFunctionManager implements IResourceFunction, IAttrFunction {
 	public <T extends IResourceCfg> T getResById(String cfgId) {
 		return basicFunction.getResById(cfgId);
 	}
+
+	@Override
+	public String getCfgIdByResId(String resId) {
+		return basicFunction.getCfgIdByResId(resId);
+	}
 }
