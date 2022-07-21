@@ -39,7 +39,10 @@ public interface ISession extends IChannelMessageSender {
 	 * 添加一个close 监听
 	 * @param listener
 	 */
-	void addCloseListener(String name, BaseSession.SessionCloseListener listener);
+	default void addCloseListener(String name, BaseSession.SessionCloseListener listener) {
+		addCloseListener(name, listener, true);
+	}
+	void addCloseListener(String name, BaseSession.SessionCloseListener listener, boolean checkRepeat);
 
 	/**
 	 * 清理Close listener

@@ -163,9 +163,13 @@ abstract class BaseSession implements ISession {
 	}
 
 	@Override
-	public void addCloseListener(String name, SessionCloseListener listener) {
+	public void addCloseListener(String name, SessionCloseListener listener, boolean check) {
 		if (this.closeListeners.containsKey(name)) {
-			throw new CustomException("close listener {} repeated!", name);
+			if (check) {
+				throw new CustomException("close listener {} repeated!", name);
+			}else {
+				logger.error("add close listener {} repeated", name);
+			}
 		}
 		this.closeListeners.put(name, listener);
 	}

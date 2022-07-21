@@ -56,7 +56,7 @@ public class KcpServerHandler extends SimpleChannelInboundHandler<MessageContent
 			PlayerActor playerActor = (PlayerActor) ctx.channel().attr(ServerConstants.MESSAGE_ACTOR_KEY).get();
 			session.addCloseListener("IKcpUsabilityLose", (session0, cause) -> {
 				playerActor.syncFireObserver(IKcpUsabilityChange.class, o -> o.ability(false));
-			});
+			}, false);
 		}
 		ctx.fireChannelActive();
 	}
