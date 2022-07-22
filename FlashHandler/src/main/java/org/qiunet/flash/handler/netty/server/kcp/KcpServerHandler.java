@@ -102,7 +102,7 @@ public class KcpServerHandler extends SimpleChannelInboundHandler<MessageContent
 			PlayerActor playerActor = UserOnlineManager.getPlayerActor(kcpParamInfo.getPlayerId());
 			ChannelUtil.getSession(ctx.channel()).addCloseListener("IKcpUsabilityLose", (session, cause) -> {
 				playerActor.syncFireObserver(IKcpUsabilityChange.class, o -> o.ability(false));
-			});
+			}, false);
 			// 老session踢下线
 			if (playerActor.getSession().getKcpSession() != null) {
 				playerActor.getSession().getKcpSession().close(CloseCause.LOGIN_REPEATED);
