@@ -210,7 +210,7 @@ public class DSession extends BaseSession implements IChannelMessageSender {
 		this.addCloseListener("CloseKcpSession", (session, cause) -> {
 			logger.debug("Close kcp session!");
 			this.kcpSession.close(cause);
-		});
+		}, false);
 	}
 
 	@Override
