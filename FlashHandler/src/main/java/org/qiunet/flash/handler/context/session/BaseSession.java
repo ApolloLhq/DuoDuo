@@ -2,15 +2,15 @@ package org.qiunet.flash.handler.context.session;
 
 import com.google.common.collect.Maps;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
 import io.netty.util.AttributeKey;
 import org.qiunet.flash.handler.common.MessageHandler;
 import org.qiunet.flash.handler.common.player.IMessageActor;
 import org.qiunet.flash.handler.common.player.IRobot;
+import org.qiunet.flash.handler.context.response.push.DefaultByteBufMessage;
 import org.qiunet.flash.handler.context.response.push.IChannelMessage;
 import org.qiunet.flash.handler.context.sender.IChannelMessageSender;
-import org.qiunet.flash.handler.context.session.future.DChannelFutureWrapper;
 import org.qiunet.flash.handler.context.session.future.DMessageContentFuture;
-import org.qiunet.flash.handler.context.session.future.IDSessionFuture;
 import org.qiunet.flash.handler.netty.server.constants.CloseCause;
 import org.qiunet.flash.handler.netty.server.constants.ServerConstants;
 import org.qiunet.flash.handler.util.ChannelUtil;
@@ -131,12 +131,12 @@ abstract class BaseSession implements ISession {
 	}
 
 	@Override
-	public IDSessionFuture sendMessage(IChannelMessage<?> message) {
+	public ChannelFuture sendMessage(IChannelMessage<?> message) {
 		return this.sendMessage(message, true);
 	}
 
 	@Override
-	public IDSessionFuture sendMessage(IChannelMessage<?> message, boolean flush) {
+	public ChannelFuture sendMessage(IChannelMessage<?> message, boolean flush) {
 		return this.realSendMessage(message, flush);
 	}
 
@@ -146,11 +146,15 @@ abstract class BaseSession implements ISession {
 	 * @param flush
 	 * @return
 	 */
-	protected IDSessionFuture realSendMessage(IChannelMessage<?> message, boolean flush) {
+	protected ChannelFuture realSendMessage(IChannelMessage<?> message, boolean flush) {
 		IMessageActor messageActor = getAttachObj(ServerConstants.MESSAGE_ACTOR_KEY);
 		if (! this.channel.isOpen()) {
 			String identityDesc = messageActor == null ? channel.id().asShortText() : messageActor.getIdentity();
 			logger.error("[{}] discard [{}({})] message: {}", identityDesc, channel.attr(ServerConstants.HANDLER_TYPE_KEY).get(), channel.id().asShortText(), message.toStr());
+			if (message instanceof DefaultByteBufMessage) {
+				((DefaultByteBufMessage) message).getContent().release();
+				message.recycle();
+			}
 			return new DMessageContentFuture(channel, message);
 		}
 
@@ -159,9 +163,9 @@ abstract class BaseSession implements ISession {
 		}
 
 		if (flush) {
-			return DChannelFutureWrapper.valueOf(this.channel.writeAndFlush(message));
+			return this.channel.writeAndFlush(message);
 		}else {
-			return DChannelFutureWrapper.valueOf(this.channel.write(message));
+			return this.channel.write(message);
 		}
 	}
 
