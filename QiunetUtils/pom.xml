@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <artifactId>DuoDuo</artifactId>
-        <groupId>org.qiunet</groupId>
+        <groupId>io.github.qiunet</groupId>
         <version>6</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
@@ -85,6 +85,13 @@
 			<groupId>com.baidu</groupId>
 			<artifactId>jprotobuf</artifactId>
 			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.sun</groupId>
+			<artifactId>tools</artifactId>
+			<version>${java.version}</version>
+			<scope>system</scope>
+			<systemPath>${java.home}/../lib/tools.jar</systemPath>
 		</dependency>
 	</dependencies>
 </project>
