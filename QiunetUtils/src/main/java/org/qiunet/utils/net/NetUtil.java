@@ -199,7 +199,7 @@ public class NetUtil {
 		try {
 			address = InetAddress.getLocalHost();
 		} catch (UnknownHostException e) {
-			e.printStackTrace();
+			LoggerType.DUODUO.error("", e);
 		}
 		return address != null ? address.getHostName() : null;
 	}
