@@ -46,6 +46,7 @@ public final class NettyTcpServer implements INettyServer {
 
 			bootstrap.option(ChannelOption.SO_BACKLOG, 256);
 			bootstrap.option(ChannelOption.SO_REUSEADDR, true);
+			bootstrap.option(ChannelOption.TCP_NODELAY, true);
 			bootstrap.option(ChannelOption.SO_RCVBUF, 1024*1024*2);
 
 			this.channelFuture = bootstrap.bind(params.getPort());
