@@ -20,10 +20,7 @@ import java.util.concurrent.TimeUnit;
 public abstract class HttpRequest<B extends HttpRequest> {
 	protected static final Logger logger = LoggerType.DUODUO_HTTP.getLogger();
 	protected static final OkHttpClient client = new OkHttpClient.Builder()
-		.connectTimeout(3000, TimeUnit.MILLISECONDS)
 		.dispatcher(new Dispatcher(ThreadPoolManager.NORMAL))
-		.readTimeout(3000, TimeUnit.MILLISECONDS)
-		.callTimeout(3000, TimeUnit.MILLISECONDS)
 		.build();
 
 	protected String url;
