@@ -9,11 +9,11 @@ import org.qiunet.function.utils.ResourceUtil;
  * 2020-04-25 20:48
  **/
 public interface IResourceCfg {
-	/**
+	/**R
 	 * 获得contentId
 	 * @return
 	 */
-	int getContentId();
+	String getContentId();
 	/**
 	 * 获得资源的子类型
 	 * @return

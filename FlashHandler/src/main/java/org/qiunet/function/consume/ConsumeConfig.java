@@ -39,8 +39,8 @@ public class ConsumeConfig  extends HashMap<Object, String> implements IKeyValue
 		return typeGetter.apply(getCfgId()).createConsume(this);
 	}
 
-	public int getContentId() {
-		return getInt("cid");
+	public String getContentId() {
+		return get("cid");
 	}
 
 	public int getType() {

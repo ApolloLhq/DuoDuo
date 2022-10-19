@@ -26,7 +26,7 @@ public interface IRealReward {
 	 */
 	String getCfgId();
 
-	default int getContentId() {
+	default String getContentId() {
 		return ResourceUtil.getContentId(getCfgId());
 	}
 

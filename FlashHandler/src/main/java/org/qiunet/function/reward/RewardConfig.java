@@ -36,8 +36,8 @@ public final class RewardConfig extends HashMap<Object, String> implements IKeyV
 		return subTypeGetter.apply(getCfgId()).createRewardItem(this);
 	}
 
-	public int getContentId() {
-		return getInt("cid");
+	public String getContentId() {
+		return get("cid");
 	}
 
 	public int getType() {

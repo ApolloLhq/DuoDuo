@@ -20,7 +20,7 @@ public class ResourceUtil {
 	@AutoWired
 	private static IBasicFunction basicFunction;
 
-	public static int getContentId(String cfgId) {
+	public static String getContentId(String cfgId) {
 		return getResourceCfg(cfgId).getContentId();
 	}
 
@@ -30,7 +30,7 @@ public class ResourceUtil {
 	 * @param contentId
 	 * @return
 	 */
-	public static String buildItemId(int type, int contentId) {
+	public static String buildItemId(int type, String contentId) {
 		return type + "_" + contentId;
 	}
 	/**
@@ -56,7 +56,7 @@ public class ResourceUtil {
 		}
 
 		if (config.containKey("cid") && config.containKey("type")) {
-			config.returnMap().put("cfgId", ResourceUtil.buildItemId(config.getInt("type"), config.getInt("cid")));
+			config.returnMap().put("cfgId", ResourceUtil.buildItemId(config.getInt("type"), "cid"));
 		}else if(config.containKey("id")) {
 			// 此处id 为resID
 			String cfgId = BasicFunctionManager.instance.getCfgIdByResId(config.getString("id"));
