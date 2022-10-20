@@ -19,7 +19,7 @@ import org.qiunet.flash.handler.handler.mapping.UrlRequestHandlerMapping;
 import org.qiunet.flash.handler.netty.coder.WebSocketDecoder;
 import org.qiunet.flash.handler.netty.coder.WebSocketEncoder;
 import org.qiunet.flash.handler.netty.server.idle.NettyIdleCheckHandler;
-import org.qiunet.flash.handler.netty.server.param.HttpBootstrapParams;
+import org.qiunet.flash.handler.netty.server.param.ServerBootStrapParam;
 import org.qiunet.flash.handler.util.ChannelUtil;
 import org.qiunet.utils.logger.LoggerType;
 import org.qiunet.utils.thread.ThreadContextData;
@@ -38,9 +38,9 @@ import java.util.function.Supplier;
 public class HttpServerHandler  extends SimpleChannelInboundHandler<FullHttpRequest> {
 	private static final Logger logger = LoggerType.DUODUO_FLASH_HANDLER.getLogger();
 
-	private final HttpBootstrapParams params;
+	private final ServerBootStrapParam params;
 
-	public HttpServerHandler (HttpBootstrapParams params) {
+	public HttpServerHandler (ServerBootStrapParam params) {
 		this.params = params;
 	}
 
@@ -88,10 +88,10 @@ public class HttpServerHandler  extends SimpleChannelInboundHandler<FullHttpRequ
 		}
 
 		try {
-			if (params.getGameURIPath().equals(uri.getRawPath())) {
+			if (params.getHttpParam().getGameURIPath().equals(uri.getRawPath())) {
 				// 游戏的请求
 				handlerGameUriPathRequest(ctx, msg);
-			} else if (params.getWebsocketPath() != null && params.getWebsocketPath().equals(uri.getRawPath())) {
+			} else if (params.getHttpParam().getWebsocketPath() != null && params.getHttpParam().getWebsocketPath().equals(uri.getRawPath())) {
 				// 升级握手信息
 				handlerWebSocketHandShark(ctx, msg);
 			}else {
@@ -114,7 +114,7 @@ public class HttpServerHandler  extends SimpleChannelInboundHandler<FullHttpRequ
 		pipeline.addLast("NettyIdleCheckHandler", new NettyIdleCheckHandler());
 		pipeline.addLast("WebSocketServerProtocolHandler", new WebSocketServerProtocolHandler(WebSocketServerProtocolConfig.newBuilder()
 			.maxFramePayloadLength(params.getMaxReceivedLength())
-			.websocketPath(params.getWebsocketPath())
+			.websocketPath(params.getHttpParam().getWebsocketPath())
 			.handleCloseFrames(true)
 			.build()));
 		pipeline.addLast("WriteTimeoutHandler", new WriteTimeoutHandler(30));
