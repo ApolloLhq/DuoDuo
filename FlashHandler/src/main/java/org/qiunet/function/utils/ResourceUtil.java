@@ -56,7 +56,7 @@ public class ResourceUtil {
 		}
 
 		if (config.containKey("cid") && config.containKey("type")) {
-			config.returnMap().put("cfgId", ResourceUtil.buildItemId(config.getInt("type"), "cid"));
+			config.returnMap().put("cfgId", ResourceUtil.buildItemId(config.getInt("type"), config.getString("cid")));
 		}else if(config.containKey("id")) {
 			// 此处id 为resID
 			String cfgId = BasicFunctionManager.instance.getCfgIdByResId(config.getString("id"));

@@ -40,7 +40,7 @@ public class ConsumeConfig  extends HashMap<Object, String> implements IKeyValue
 	}
 
 	public String getContentId() {
-		return get("cid");
+		return getString("cid");
 	}
 
 	public int getType() {

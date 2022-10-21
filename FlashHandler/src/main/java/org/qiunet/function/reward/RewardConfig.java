@@ -37,7 +37,7 @@ public final class RewardConfig extends HashMap<Object, String> implements IKeyV
 	}
 
 	public String getContentId() {
-		return get("cid");
+		return getString("cid");
 	}
 
 	public int getType() {
