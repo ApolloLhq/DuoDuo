@@ -2,7 +2,7 @@ package org.qiunet.function.consume;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
-import org.qiunet.flash.handler.common.IThreadSafe;
+import org.qiunet.utils.thread.IThreadSafe;
 import org.qiunet.flash.handler.context.status.StatusResult;
 import org.qiunet.function.base.IOperationType;
 import org.qiunet.function.base.IResourceType;

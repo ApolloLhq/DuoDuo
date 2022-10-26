@@ -89,7 +89,6 @@ class DbEntityAsyncQueue {
 			switch (element.operate) {
 				case INSERT:
 					if (entity.atomicSetEntityStatus(EntityStatus.INSERT, EntityStatus.NORMAL)) {
-						entity.serialize();
 						databaseSupport.insert(insertStatement, entity.getDo());
 					}else {
 						logger.error("Entity status [{}] is error, can not insert to db.", entity.entityStatus());
@@ -97,7 +96,6 @@ class DbEntityAsyncQueue {
 					break;
 				case UPDATE:
 					if (entity.atomicSetEntityStatus(EntityStatus.UPDATE, EntityStatus.NORMAL)) {
-						entity.serialize();
 						databaseSupport.update(updateStatement, entity.getDo());
 					}else {
 						logger.error("Entity status [{}] is error, can not update to db.", entity.entityStatus());

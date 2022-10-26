@@ -41,6 +41,10 @@ public abstract class DbEntityBo<Do extends IDbEntity<?>> implements IEntityBo<D
 			return;
 		}
 
+		if (!playerDataLoader.threadSafe.inSelfThread()) {
+			throw new RuntimeException("Not in self thread!");
+		}
+
 		if (entityStatus() == EntityStatus.INIT) {
 			throw new CustomException("Need insert first!");
 		}
@@ -52,6 +56,8 @@ public abstract class DbEntityBo<Do extends IDbEntity<?>> implements IEntityBo<D
 		if (playerDataLoader.readOnly) {
 			throw new CustomException("Data loader read only!");
 		}
+
+		this.serialize();
 
 		// 如果上次的数据没有逻辑. 比如插入. 则这次更新不进行
 		if (atomicStatus.compareAndSet(EntityStatus.NORMAL, EntityStatus.UPDATE)) {

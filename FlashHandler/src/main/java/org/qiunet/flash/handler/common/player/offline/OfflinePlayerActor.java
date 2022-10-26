@@ -1,5 +1,7 @@
 package org.qiunet.flash.handler.common.player.offline;
 
+import com.google.common.base.Preconditions;
+import org.qiunet.data.async.ISyncDbMessage;
 import org.qiunet.data.db.loader.IPlayerDataLoader;
 import org.qiunet.data.db.loader.PlayerDataLoader;
 import org.qiunet.flash.handler.common.MessageHandler;
@@ -16,7 +18,7 @@ import org.qiunet.flash.handler.common.player.event.UserEventData;
  * @author qiunet
  * 2021/11/19 11:55
  */
-public class OfflinePlayerActor extends MessageHandler<OfflinePlayerActor> implements IPlayerDataLoader, IPlayer {
+public class OfflinePlayerActor extends MessageHandler<OfflinePlayerActor> implements IPlayerDataLoader, IPlayer, ISyncDbMessage {
 	/**
 	 * 玩家的数据加载器
 	 */
@@ -24,14 +26,15 @@ public class OfflinePlayerActor extends MessageHandler<OfflinePlayerActor> imple
 	private final String msgExecuteIndex;
 
 	OfflinePlayerActor(long playerId) {
+		// 新言这里就是playerId
 		this.msgExecuteIndex = String.valueOf(playerId);
-		this.dataLoader = new PlayerDataLoader(playerId);
-		this.fireEvent(OfflineUserCreateEvent.valueOf());
-
+		this.fireEvent(OfflineUserCreateEvent.valueOf(this));
+		this.dataLoader = new PlayerDataLoader(this, this, playerId);
 	}
 
 	@Override
 	public String msgExecuteIndex() {
+		Preconditions.checkNotNull(msgExecuteIndex, "Need set msgExecuteIndex in OfflineUserCreateEvent!");
 		return msgExecuteIndex;
 	}
 
@@ -70,5 +73,10 @@ public class OfflinePlayerActor extends MessageHandler<OfflinePlayerActor> imple
 		UserOfflineManager.instance.remove(getPlayerId());
 		this.dataLoader.unregister();
 
+	}
+
+	@Override
+	public void syncBbMessage(Runnable runnable) {
+		this.addMessage(h -> runnable.run());
 	}
 }

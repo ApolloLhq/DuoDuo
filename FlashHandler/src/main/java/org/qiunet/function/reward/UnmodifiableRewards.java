@@ -2,7 +2,7 @@ package org.qiunet.function.reward;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-import org.qiunet.flash.handler.common.IThreadSafe;
+import org.qiunet.utils.thread.IThreadSafe;
 import org.qiunet.flash.handler.common.player.IPlayer;
 import org.qiunet.utils.exceptions.CustomException;
 import org.qiunet.utils.json.JsonUtil;
