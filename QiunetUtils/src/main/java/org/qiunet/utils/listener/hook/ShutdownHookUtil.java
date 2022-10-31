@@ -1,9 +1,8 @@
 package org.qiunet.utils.listener.hook;
 
-import org.qiunet.utils.exceptions.CustomException;
 import org.qiunet.utils.listener.event.EventHandlerWeightType;
 import org.qiunet.utils.listener.event.EventListener;
-import org.qiunet.utils.listener.event.data.ServerShutdownEventData;
+import org.qiunet.utils.listener.event.data.ServerShutdownCompleteEvent;
 import org.qiunet.utils.logger.LoggerType;
 import org.slf4j.Logger;
 
@@ -18,28 +17,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @Author qiunet
  * @Date Create in 2018/5/31 12:04
  **/
-public class ShutdownHookUtil {
+public enum ShutdownHookUtil {
+	instance;
 	private final LinkedList<IShutdownCloseHook> closes = new LinkedList<>();
 	private final Logger logger = LoggerType.DUODUO.getLogger();
 	private final AtomicBoolean executing = new AtomicBoolean();
-	private static ShutdownHookUtil instance;
-
-	private ShutdownHookUtil() {
-		if (instance != null) {
-			throw new CustomException("Instance Duplication!");
-		}
-		instance = this;
-	}
-
 	public static ShutdownHookUtil getInstance() {
-		if (instance == null) {
-			synchronized (ShutdownHookUtil.class) {
-				if (instance == null)
-				{
-					new ShutdownHookUtil();
-				}
-			}
-		}
 		return instance;
 	}
 	/***
@@ -75,7 +58,7 @@ public class ShutdownHookUtil {
 
 
 	@EventListener(EventHandlerWeightType.LESS)
-	public void onShutdown(ServerShutdownEventData data) {
+	private void onShutdown(ServerShutdownCompleteEvent data) {
 		this.shutdownNow();
 	}
 

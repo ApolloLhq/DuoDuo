@@ -122,8 +122,7 @@ abstract class BaseSession implements ISession {
 			return;
 		}
 
-		if (cause == CloseCause.SERVER_SHUTDOWN
-		|| ((MessageHandler) attachObj).isDestroyed()
+		if (((MessageHandler) attachObj).isDestroyed()
 		|| ((MessageHandler<?>) attachObj).inSelfThread()) {
 			// 直接执行.
 			this.closeSession(cause);

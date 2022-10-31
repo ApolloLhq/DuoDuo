@@ -13,10 +13,7 @@ import org.qiunet.flash.handler.netty.server.param.ServerBootStrapParam;
 import org.qiunet.flash.handler.netty.server.tcp.NettyTcpServer;
 import org.qiunet.utils.collection.enums.ForEachResult;
 import org.qiunet.utils.exceptions.CustomException;
-import org.qiunet.utils.listener.event.data.ServerClosedEvent;
-import org.qiunet.utils.listener.event.data.ServerDeprecatedEvent;
-import org.qiunet.utils.listener.event.data.ServerShutdownEventData;
-import org.qiunet.utils.listener.event.data.ServerStartupEventData;
+import org.qiunet.utils.listener.event.data.*;
 import org.qiunet.utils.logger.LoggerType;
 import org.qiunet.utils.net.NetUtil;
 import org.qiunet.utils.string.StringUtil;
@@ -191,6 +188,10 @@ public class BootstrapServer {
 
 			// 停止共用的线程池
 			ServerConstants.WORKER.shutdownGracefully();
+
+			// 发送停服完成事件
+			ServerShutdownCompleteEvent.fireEvent();
+
 			// 放开主线程
 			LockSupport.unpark(awaitThread);
 		}

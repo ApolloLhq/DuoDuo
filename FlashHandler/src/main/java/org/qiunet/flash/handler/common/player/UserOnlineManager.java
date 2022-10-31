@@ -13,18 +13,19 @@ import org.qiunet.flash.handler.context.response.push.DefaultBytesMessage;
 import org.qiunet.flash.handler.netty.server.constants.CloseCause;
 import org.qiunet.flash.handler.netty.server.constants.ServerConstants;
 import org.qiunet.flash.handler.netty.server.event.ServerStartupCompleteEvent;
+import org.qiunet.utils.async.future.DCompletePromise;
 import org.qiunet.utils.async.future.DFuture;
 import org.qiunet.utils.collection.enums.ForEachResult;
 import org.qiunet.utils.listener.event.EventHandlerWeightType;
 import org.qiunet.utils.listener.event.EventListener;
 import org.qiunet.utils.listener.event.data.ServerShutdownEventData;
 import org.qiunet.utils.logger.LoggerType;
-import org.qiunet.utils.thread.ThreadPoolManager;
 import org.qiunet.utils.timer.TimerManager;
 
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.*;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -307,33 +308,30 @@ public enum UserOnlineManager {
 		if (ServerConfig.getServerType() != ServerType.LOGIC && ServerConfig.getServerType() != ServerType.CROSS) {
 			return;
 		}
-
-		this.scheduledFuture.cancel(false);
 		LoggerType.DUODUO_FLASH_HANDLER.error("==Online user session close start==");
-		List<Callable<Boolean>> callables = Lists.newArrayListWithExpectedSize(onlineSize());
-		for (PlayerActor actor : onlinePlayers.values()) {
-			callables.add(() -> {
-				actor.session.close(CloseCause.SERVER_SHUTDOWN);
-				return true;
-			});
-		}
-		for (CrossPlayerActor actor : onlineCrossPlayers.values()) {
-			callables.add(() -> {
-				actor.session.close(CloseCause.SERVER_SHUTDOWN);
-				return true;
-			});
-		}
-
 		waitReconnects.values().forEach(w -> destroyPlayer(w.actor));
+		this.scheduledFuture.cancel(false);
 
-		try {
-			List<Future<Boolean>> futures = ThreadPoolManager.NORMAL.invokeAll(callables, 6, TimeUnit.SECONDS);
-			for (Future<Boolean> future : futures) {
-				future.get(3, TimeUnit.SECONDS);
+		List<Future<Boolean>> futures = Lists.newArrayListWithExpectedSize(onlineSize());
+		Consumer<AbstractUserActor<?>> consumer = actor -> {
+			DCompletePromise<Boolean> promise = new DCompletePromise<>();
+			actor.addMessage(a -> {
+				a.getSession().close(CloseCause.SERVER_SHUTDOWN);
+				promise.trySuccess(true);
+			});
+			futures.add(promise);
+		};
+
+		onlineCrossPlayers.values().forEach(consumer);
+		onlinePlayers.values().forEach(consumer);
+		for (Future<Boolean> future : futures) {
+			try {
+				future.get(6, TimeUnit.SECONDS);
+			} catch (InterruptedException | ExecutionException | TimeoutException e) {
+				LoggerType.DUODUO_FLASH_HANDLER.error("shutdown exception: ", e);
 			}
-		} catch (InterruptedException | ExecutionException | TimeoutException e) {
-			LoggerType.DUODUO_FLASH_HANDLER.error("shutdown exception: ", e);
 		}
+
 		LoggerType.DUODUO_FLASH_HANDLER.error("==Online user session all closed==");
 	}
 }
