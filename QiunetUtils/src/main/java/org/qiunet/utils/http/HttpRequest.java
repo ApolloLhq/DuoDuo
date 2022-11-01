@@ -9,7 +9,6 @@ import org.slf4j.Logger;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 /***
  *
@@ -32,8 +31,7 @@ public abstract class HttpRequest<B extends HttpRequest> {
 	}
 
 	protected Headers.Builder headerBuilder = new Headers.Builder()
-		.add("Accept-Charset", "UTF-8")
-		.add("Accept-Encoding", "gzip");
+		.add("Accept-Charset", "UTF-8");
 
 	public static PostHttpRequest post(String url) {
 		return new PostHttpRequest(url);
