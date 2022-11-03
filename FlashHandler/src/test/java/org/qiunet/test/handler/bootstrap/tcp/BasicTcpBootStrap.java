@@ -36,7 +36,7 @@ public abstract class BasicTcpBootStrap {
 			ServerBootStrapParam tcpParams = ServerBootStrapParam.newBuild("Tcp测试", port)
 				.setProtocolHeaderType(ProtocolHeaderType.server)
 				.setStartupContext(new StartupContext())
-				.setEncryption(true)
+				.encryption()
 				.build();
 
 			BootstrapServer server = BootstrapServer.createBootstrap(hook).listener(tcpParams);

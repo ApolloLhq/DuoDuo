@@ -23,7 +23,7 @@ public class Test {
 				ServerBootStrapParam.newBuild("测试", 8888)
 						.setProtocolHeaderType(ProtocolHeaderType.server)
 						.setStartupContext(new StartupContext())
-						.setEncryption(true)
+						.encryption()
 					.build()
 		).await();
 	}

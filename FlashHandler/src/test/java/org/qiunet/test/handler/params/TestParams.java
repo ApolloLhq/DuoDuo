@@ -18,7 +18,7 @@ public class TestParams {
 				.setTcpBootStrapParam(ServerBootStrapParam.TcpBootstrapParam.newBuild().setUdpOpen(ServerBootStrapParam.KcpBootstrapParam.newBuild().setPortCount(10).build()).build())
 				.setHttpBootStrapParam(ServerBootStrapParam.HttpBootstrapParam.newBuild().setWebsocketPath("/aa").build())
 				.setProtocolHeaderType(ProtocolHeaderType.server)
-				.setEncryption(true)
+				.encryption()
 				.build();
 
 		Assertions.assertEquals(param.getHttpParam().getWebsocketPath(), "/aa");

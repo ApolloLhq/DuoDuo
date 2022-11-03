@@ -34,7 +34,7 @@ public abstract class BasicKcpBootStrap {
 					.setKcpBootStrapParam(ServerBootStrapParam.KcpBootstrapParam.newBuild().setPortCount(0, 1).build())
 					.setProtocolHeaderType(ProtocolHeaderType.server)
 					.setStartupContext(new StartupContext())
-					.setEncryption(true)
+					.encryption()
 				.build();
 
 			BootstrapServer server = BootstrapServer.createBootstrap(hook).listener(param);

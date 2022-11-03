@@ -3,6 +3,7 @@ package org.qiunet.flash.handler.common.player;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import io.micrometer.core.instrument.Gauge;
 import org.qiunet.cross.actor.CrossPlayerActor;
 import org.qiunet.data.util.ServerConfig;
 import org.qiunet.data.util.ServerType;
@@ -13,15 +14,18 @@ import org.qiunet.flash.handler.context.response.push.DefaultBytesMessage;
 import org.qiunet.flash.handler.netty.server.constants.CloseCause;
 import org.qiunet.flash.handler.netty.server.constants.ServerConstants;
 import org.qiunet.flash.handler.netty.server.event.ServerStartupCompleteEvent;
+import org.qiunet.function.prometheus.RootRegistry;
 import org.qiunet.utils.async.future.DCompletePromise;
 import org.qiunet.utils.async.future.DFuture;
 import org.qiunet.utils.collection.enums.ForEachResult;
 import org.qiunet.utils.listener.event.EventHandlerWeightType;
 import org.qiunet.utils.listener.event.EventListener;
 import org.qiunet.utils.listener.event.data.ServerShutdownEventData;
+import org.qiunet.utils.listener.event.data.ServerStartupEventData;
 import org.qiunet.utils.logger.LoggerType;
 import org.qiunet.utils.timer.TimerManager;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.*;
@@ -53,6 +57,17 @@ public enum UserOnlineManager {
 	 * 等待重连
 	 */
 	private final Map<Long, WaitActor> waitReconnects = Maps.newConcurrentMap();
+
+	@EventListener
+	public void serverStartup(ServerStartupEventData eventData) {
+		Gauge.builder("online.player.count", onlineCrossPlayers.values(), Collection::size)
+				.tag("type", "cross")
+				.register(RootRegistry.instance.registry());
+
+		Gauge.builder("online.player.count", onlinePlayers.values(), Collection::size)
+				.tag("type", "local")
+				.register(RootRegistry.instance.registry());
+	}
 
 	@EventListener
 	private void addPlayerActor(LoginSuccessEvent eventData) {

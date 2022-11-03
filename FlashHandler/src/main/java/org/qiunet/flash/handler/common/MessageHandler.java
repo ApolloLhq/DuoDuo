@@ -14,7 +14,6 @@ import org.qiunet.utils.thread.IThreadSafe;
 import org.qiunet.utils.thread.ThreadContextData;
 import org.qiunet.utils.thread.ThreadPoolManager;
 import org.qiunet.utils.timer.TimerManager;
-import org.qiunet.utils.timer.UseTimer;
 import org.slf4j.Logger;
 
 import java.util.List;
@@ -38,8 +37,6 @@ public abstract class MessageHandler<H extends IMessageHandler<H>>
 	private static final MessageHandlerEventLoop executorService = new MessageHandlerEventLoop(OSUtil.availableProcessors() * 2);
 
 	private final LazyLoader<DExecutorService> executor = new LazyLoader<>(() -> executorService.getEventLoop(this.msgExecuteIndex()));
-
-	private final UseTimer useTimer = new UseTimer(this::getIdentity, 300);
 	private final Logger logger = LoggerType.DUODUO_FLASH_HANDLER.getLogger();
 
 	private final Queue<IMessage<H>> messages = new ConcurrentLinkedQueue<>();
@@ -65,9 +62,7 @@ public abstract class MessageHandler<H extends IMessageHandler<H>>
 				break;
 			}
 			try {
-				useTimer.start();
 				message.execute((H) this);
-				useTimer.printUseTime(() -> message.getClass().getName());
 			}catch (Exception e) {
 				logger.error("{}", getClass().getName(), e);
 			}
