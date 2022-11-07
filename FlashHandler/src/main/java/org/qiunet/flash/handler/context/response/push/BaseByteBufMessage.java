@@ -25,6 +25,7 @@ public abstract class BaseByteBufMessage<T> implements IChannelMessage<T> {
 		IProtocolHeaderType headerAdapter = ChannelUtil.getProtocolHeaderAdapter(channel);
 		IProtocolHeader protocolHeader = headerAdapter.outHeader(this.getProtocolID(), this);
 		ByteBuf byteBuf = Unpooled.wrappedBuffer(protocolHeader.headerByteBuf(), this.getByteBuf());
+		this.loggerChannelMessage(channel);
 		protocolHeader.recycle();
 		this.recycle();
 		return byteBuf;

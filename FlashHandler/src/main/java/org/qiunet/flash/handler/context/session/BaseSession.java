@@ -7,7 +7,6 @@ import io.netty.channel.ChannelFuture;
 import io.netty.util.AttributeKey;
 import org.qiunet.flash.handler.common.MessageHandler;
 import org.qiunet.flash.handler.common.player.IMessageActor;
-import org.qiunet.flash.handler.common.player.IRobot;
 import org.qiunet.flash.handler.context.response.push.BaseByteBufMessage;
 import org.qiunet.flash.handler.context.response.push.DefaultByteBufMessage;
 import org.qiunet.flash.handler.context.response.push.IChannelMessage;
@@ -230,10 +229,6 @@ abstract class BaseSession implements ISession {
 			}
 			message.recycle();
 			return channel.newPromise();
-		}
-
-		if ( logger.isInfoEnabled() && messageActor != null && ( message.needLogger() || messageActor instanceof IRobot)) {
-			logger.info("[{}] [{}({})] >>> {}", messageActor.getIdentity(), channel.attr(ServerConstants.HANDLER_TYPE_KEY).get(), channel.id().asShortText(), message.toStr());
 		}
 
 		if (flush) {

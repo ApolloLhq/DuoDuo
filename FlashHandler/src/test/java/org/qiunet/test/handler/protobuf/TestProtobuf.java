@@ -49,6 +49,14 @@ public class TestProtobuf {
 			Assertions.assertEquals(decode.getLevel(), level);
 			Assertions.assertEquals(decode.getList(), longs);
 		}
+	}
 
+	@Test
+	public void testEncode() {
+		List<Long> longs = Lists.newArrayList(1L, null, 3L);
+		String name = "qiunet";
+		int level = 10;
+		RequestData data = RequestData.valueOf(name, level, longs);
+		Assertions.assertThrows(NullPointerException.class, data::toByteBuf);
 	}
 }
