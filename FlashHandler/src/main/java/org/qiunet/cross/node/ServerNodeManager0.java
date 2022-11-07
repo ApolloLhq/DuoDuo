@@ -44,8 +44,8 @@ import java.util.function.Supplier;
  */
 enum ServerNodeManager0 implements IApplicationContextAware {
 	instance;
-	// server node 创建同步锁redis key
-	private static final String SERVER_NODE_CREATE_SYNC_LOCK_KEY = "server_node_create_sync_lock_key_";
+	/** 注册中心redis key 前缀 with server type */
+	private static final String SERVER_REGISTER_CENTER_PREFIX = "SERVER_REGISTER_CENTER#";
 	// 所有当前的节点
 	private final Map<Integer, ServerNode> nodes = Maps.newConcurrentMap();
 	/** 服务器已经过期. 不再上传信息 . login 不再分配进入.*/
@@ -57,7 +57,7 @@ enum ServerNodeManager0 implements IApplicationContextAware {
 	/**
 	 * 当前server node 的 info key
 	 */
-	private String REDIS_SERVER_NODE_INFO_KEY;
+	private String CURRENT_SERVER_NODE_INFO_REDIS_KEY;
 	/**
 	 * 服务器的信息. 支持增加自定义字段.
 	 */
@@ -140,7 +140,7 @@ enum ServerNodeManager0 implements IApplicationContextAware {
 		if (nodes.containsKey(serverId)) {
 			return nodes.get(serverId);
 		}
-		RedisLock redisLock = redisUtil.redisLock(createRedisKey(currServerInfo.getServerId(), serverId));
+		RedisLock redisLock = redisUtil.redisLock(ServerNode.getServerNodeLockRedisKey(currServerInfo.getServerId(), serverId));
 		try {
 			if (redisLock.lock()) {
 				if (nodes.containsKey(serverId)) {
@@ -162,7 +162,7 @@ enum ServerNodeManager0 implements IApplicationContextAware {
 			? ServerInfo.valueOf(ServerConfig.getServerPort(), ServerConfig.getNodePort())
 			: argsContainer.getArgument(ScannerParamKey.CUSTOM_SERVER_INFO).get();
 
-		this.REDIS_SERVER_NODE_INFO_KEY = ServerInfo.serverInfoRedisKey(currServerInfo.getServerId());
+		this.CURRENT_SERVER_NODE_INFO_REDIS_KEY = ServerInfo.serverInfoRedisKey(currServerInfo.getServerId());
 
 		Argument<Supplier<IRedisUtil>> redisArg = argsContainer.getArgument(ScannerParamKey.SERVER_NODE_REDIS_INSTANCE_SUPPLIER);
 		if (! redisArg.isNull()) {
@@ -185,12 +185,10 @@ enum ServerNodeManager0 implements IApplicationContextAware {
 			if (deprecated.get()) {
 				return;
 			}
-			currServerInfo.put(ServerInfo.lastUpdateDt, System.currentTimeMillis());
-
 			// 触发心跳 业务可能修改ServerInfo数据.
 			ServerNodeTickEvent.instance.fireEventHandler();
-
-			redisUtil.returnJedis(false).set(REDIS_SERVER_NODE_INFO_KEY, currServerInfo.toString(), SetParams.setParams().ex(SERVER_OFFLINE_SECONDS));
+			currServerInfo.refreshUpdateDt();
+			redisUtil.returnJedis(false).set(CURRENT_SERVER_NODE_INFO_REDIS_KEY, currServerInfo.toString(), SetParams.setParams().ex(SERVER_OFFLINE_SECONDS));
 		}, MathUtil.random(0, 200), TimeUnit.SECONDS.toMillis(60), TimeUnit.MILLISECONDS);
 	}
 
@@ -203,25 +201,9 @@ enum ServerNodeManager0 implements IApplicationContextAware {
 	 * @param serverType
 	 * @return
 	 */
-	private static String serverRegisterCenterRedisKey(ServerType serverType) {
-		return "SERVER_REGISTER_CENTER#"+serverType;
+	private String serverRegisterCenterRedisKey(ServerType serverType) {
+		return SERVER_REGISTER_CENTER_PREFIX +serverType;
 	}
-
-
-	/**
-	 * 获得创建使用的key
-	 * @param destServerId
-	 * @return
-	 */
-	private static String createRedisKey(int srcServerId, int destServerId) {
-		if (destServerId < srcServerId) {
-			return SERVER_NODE_CREATE_SYNC_LOCK_KEY + destServerId +"_"+ srcServerId;
-		}else {
-			return SERVER_NODE_CREATE_SYNC_LOCK_KEY + srcServerId +"_"+  destServerId;
-		}
-	}
-
-
 
 	@EventListener
 	private void deprecatedEvent(ServerDeprecatedEvent event) {
@@ -231,7 +213,7 @@ enum ServerNodeManager0 implements IApplicationContextAware {
 
 		if (this.deprecated.compareAndSet(false, true)) {
 			redisUtil.returnJedis().srem(serverRegisterCenterRedisKey(this.currServerInfo.getServerType()), String.valueOf(this.currServerInfo.getServerId()));
-			redisUtil.returnJedis().del(REDIS_SERVER_NODE_INFO_KEY);
+			redisUtil.returnJedis().del(CURRENT_SERVER_NODE_INFO_REDIS_KEY);
 		}
 	}
 
@@ -258,11 +240,11 @@ enum ServerNodeManager0 implements IApplicationContextAware {
 
 		redisUtil.execCommands(jedis -> {
 			jedis.srem(serverRegisterCenterRedisKey(this.currServerInfo.getServerType()), String.valueOf(this.currServerInfo.getServerId()));
-			jedis.del(REDIS_SERVER_NODE_INFO_KEY);
+			jedis.del(CURRENT_SERVER_NODE_INFO_REDIS_KEY);
 			return null;
 		});
 
-		nodes.values().forEach(node -> this.removeNode(node));
+		nodes.values().forEach(this::removeNode);
 		NettyTcpClient.shutdown();
 	}
 
@@ -270,6 +252,4 @@ enum ServerNodeManager0 implements IApplicationContextAware {
 	public int order() {
 		return 8;
 	}
-
-
 }
