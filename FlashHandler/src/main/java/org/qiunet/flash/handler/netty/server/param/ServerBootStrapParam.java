@@ -52,7 +52,7 @@ public class ServerBootStrapParam {
 	 * 是否检验crc
 	 * 一般测试时候使用
 	 */
-	private boolean encryption = true;
+	private boolean encryption;
 	/**
 	 * 禁用Http Server
 	 * 实在用不到就禁掉, 免得通过不是自己定义的端口请求到不该请求的协议.
