@@ -41,17 +41,26 @@ public class GeneratorProtoFile implements IApplicationContextAware {
 	}
 	/**
 	 * 生成协议文件
+	 * 兼容测试需要feature {@link GeneratorProtoFeature#COMPATIBLE_CHECK}
 	 * @param directory 生成的目录
 	 * @param model 生成类型
+	 * @return true 兼容. false 不兼容.
 	 * @throws Exception -
 	 */
 	public static void generator(File directory, ProtoGeneratorModel model, ProtobufVersion version, GeneratorProtoFeature... features) throws Exception {
 		Preconditions.checkState(directory != null && directory.isDirectory(), "Directory must be a directory!");
 		Preconditions.checkState(model != null, "model is null");
 		GeneratorProtoFeature.features.addAll(Lists.newArrayList(features));
-
+		boolean compatibleCheck = GeneratorProtoFeature.COMPATIBLE_CHECK.prepare();
+		ProtoCompatible protoCompatible = null;
+		if (compatibleCheck) {
+			protoCompatible = new ProtoCompatible(directory);
+		}
 		GeneratorProtoParam protoParam = new GeneratorProtoParam(model, classes, version, directory);
 		model.generatorProto(protoParam);
+		if (compatibleCheck && !protoCompatible.compatible(new ProtoCompatible(directory))) {
+			throw new ProtocolUnCompatibleException("======协议不兼容之前的版本. 详情请查看上面打印! 如果确认无误. 需要你手动提交CVS! =========");
+		}
 	}
 
 	@Override

@@ -40,8 +40,7 @@ public abstract class BasicTcpBootStrap {
 				.build();
 
 			BootstrapServer server = BootstrapServer.createBootstrap(hook).listener(tcpParams);
-			LockSupport.unpark(currThread);
-			server.await();
+			server.await(() -> LockSupport.unpark(currThread));
 		});
 		thread.start();
 		LockSupport.park();
