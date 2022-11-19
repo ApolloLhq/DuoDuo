@@ -12,6 +12,6 @@ import org.qiunet.log.record.test.enums.LogRecordType;
 public abstract class GameLogRecordMsg extends LogRecordMsg<LogRecordType> {
 
 	public GameLogRecordMsg(LogRecordType type) {
-		super(type, "/");
+		super(type);
 	}
 }

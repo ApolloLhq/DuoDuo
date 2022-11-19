@@ -195,8 +195,11 @@ public abstract class ObjectPool<T> {
 		final WeakReference<Thread> threadRef;
 		final int queueCapacityForPerThread;
 		final DLinkedList<T> stack;
+
+		final int leastRecycleNum;
 		final int maxCapacity;
 		DStack(Thread thread, int maxCapacity, int queueCapacityForPerThread) {
+			this.leastRecycleNum = Math.min(5, Math.max(1, queueCapacityForPerThread / 4));
 			this.queueCapacityForPerThread = queueCapacityForPerThread;
 			this.threadRef = new WeakReference<>(thread);
 			this.stack = new DLinkedList<>(maxCapacity);
@@ -232,13 +235,13 @@ public abstract class ObjectPool<T> {
 		 */
 		private boolean scannerAllThread() {
 			for (SwitchList<Node> list : asyncRecycleMap.values()) {
-				if (list.isEmpty()) {
+				if (list.size() <= leastRecycleNum) {
 					continue;
 				}
 				if (this.stack.full()) {
 					break;
 				}
-				List<Node> nodes = list.lSwitch();
+				List<Node> nodes = list.renew();
 				nodes.forEach(this.stack::add);
 			}
 			return ! this.stack.isEmpty();
@@ -290,7 +293,7 @@ public abstract class ObjectPool<T> {
 			this.currList = new LinkedList<>();
 		}
 
-		public List<E> lSwitch() {
+		public List<E> renew() {
 			List<E> list = currList;
 			this.currList = new LinkedList<>();
 			return list;

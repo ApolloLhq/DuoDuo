@@ -11,8 +11,9 @@ import ch.qos.logback.classic.spi.LoggingEvent;
 import ch.qos.logback.core.rolling.RollingFileAppender;
 import ch.qos.logback.core.rolling.TimeBasedRollingPolicy;
 import com.google.common.collect.Maps;
+import org.qiunet.log.record.content.ILogContentGetter;
 import org.qiunet.log.record.enums.ILogRecordType;
-import org.qiunet.log.record.msg.LogRecordMsg;
+import org.qiunet.log.record.msg.ILogRecordMsg;
 import org.qiunet.utils.system.SystemPropertyUtil;
 import org.slf4j.LoggerFactory;
 
@@ -21,16 +22,16 @@ import java.util.Map;
 
 /***
  * Log back 记录日志
+ * 主要是放服务器. 自己查询自己看.
+ * 如果有其它平台需要. 请自己实现 {@link IRecordLogger}
  *
  * @author qiunet
  * 2020-04-02 11:06
  ***/
-public enum LogBackRecordLogger implements IRecordLogger {
-	instance;
+public class LogBackRecordLogger implements IBasicRecordLogger {
+	protected final Map<String, Logger> loggers = Maps.newConcurrentMap();
 
-	private final Map<String, Logger> loggers = Maps.newConcurrentMap();
-
-	private synchronized Logger createLogger(String loggerName) {
+	protected synchronized Logger createLogger(String loggerName) {
 		LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
 		Logger logger = lc.getLogger(loggerName);
 		if (logger.iteratorForAppenders().hasNext()) {
@@ -77,9 +78,9 @@ public enum LogBackRecordLogger implements IRecordLogger {
 	}
 
 	@Override
-	public <T extends Enum<T> & ILogRecordType<T>, L extends LogRecordMsg<T>>  void send(L logRecordMsg) {
+	public <T extends Enum<T> & ILogRecordType<T>, L extends ILogRecordMsg<T>>  void send(L logRecordMsg) {
 		Logger logger = loggers.computeIfAbsent(logRecordMsg.logType().getName(), this::createLogger);
-		LoggingEvent le = new LoggingEvent(Logger.FQCN, logger, Level.INFO, logRecordMsg.logMessage(), null, null);
+		LoggingEvent le = new LoggingEvent(Logger.FQCN, logger, Level.INFO, logRecordMsg.getLogContentData(ILogContentGetter.STRING_LOG_CONTENT_GETTER), null, null);
 		le.setTimeStamp(logRecordMsg.createTime());
 		logger.callAppenders(le);
 	}
