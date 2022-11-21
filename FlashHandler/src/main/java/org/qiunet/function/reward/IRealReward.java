@@ -8,18 +8,12 @@ import org.qiunet.function.utils.ResourceUtil;
 /***
  * 真实奖励. 方便客户端展示
  * 普通奖励就是BaseReward本身.
- * 装备奖励是装备实例
+ * 装备奖励是装备实例. 自己需要判断去强转成对应的对象. 然后操作
  *
  * @author qiunet
  * 2021-01-07 15:42
  */
 public interface IRealReward {
-	/**
-	 * 有唯一id的给唯一id.
-	 * 没有为 0
-	 * @return
-	 */
-	String getUid();
 	/**
 	 * 配置id
 	 * @return

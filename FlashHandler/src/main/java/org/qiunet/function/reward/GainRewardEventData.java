@@ -1,7 +1,5 @@
 package org.qiunet.function.reward;
 
-import org.qiunet.flash.handler.common.player.IPlayer;
-import org.qiunet.function.base.IOperationType;
 import org.qiunet.utils.listener.event.IEventData;
 
 /***
@@ -13,35 +11,17 @@ import org.qiunet.utils.listener.event.IEventData;
  */
 public class GainRewardEventData implements IEventData {
 	/**
-	 * 玩家
+	 *  奖励上下文
 	 */
-	private IPlayer player;
-	/**
-	 * 奖励本身
-	 */
-	private Rewards rewards;
-	/**
-	 * 操作类型
-	 */
-	private IOperationType type;
+	private RewardContext context;
 
-	public static GainRewardEventData valueOf(Rewards rewards, IPlayer player, IOperationType type) {
+	public static GainRewardEventData valueOf(RewardContext context) {
 		GainRewardEventData event = new GainRewardEventData();
-		event.rewards = rewards;
-		event.player = player;
-		event.type = type;
+		event.context = context;
 		return event;
 	}
 
-	public IPlayer getPlayer() {
-		return player;
-	}
-
-	public Rewards getRewards() {
-		return rewards;
-	}
-
-	public IOperationType getType() {
-		return type;
+	public RewardContext getContext() {
+		return context;
 	}
 }
