@@ -87,7 +87,7 @@ public class BootstrapServer {
 		logger.error("BootstrapServer sendHookMsg [{}]!", msg);
 		try {
 			NetUtil.udpSendData("localhost", hookPort, msg.getBytes(CharsetUtil.UTF_8));
-		} catch (IOException e) {
+		} catch (Throwable e) {
 			logger.error("BootstrapServer sendHookMsg: ", e);
 			System.exit(1);
 		}
@@ -123,7 +123,7 @@ public class BootstrapServer {
 		}catch (CustomException e) {
 			e.logger(logger);
 			System.exit(1);
-		} catch(Exception e) {
+		} catch(Throwable e) {
 			logger.error(e.getMessage(), e);
 			System.exit(1);
 		}
@@ -285,7 +285,7 @@ public class BootstrapServer {
 			try(DatagramChannel channel = DatagramChannel.open()) {
 				try {
 					channel.bind(new InetSocketAddress(InetAddress.getByName("127.0.0.1"), this.hook.getHookPort()));
-				}catch (Exception e) {
+				}catch (Throwable e) {
 					logger.error("Bind error", e);
 					System.exit(1);
 				}

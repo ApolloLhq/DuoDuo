@@ -44,7 +44,7 @@ public class NettyHttpServer implements INettyServer {
 			this.closeFuture = bootstrap.bind(param.getPort()).sync();
 			logger.error("[NettyHttpServer]  Http server {} is started on port [{}]", serverName(), param.getPort());
 			this.closeFuture.channel().closeFuture().sync();
-		}catch (Exception e) {
+		}catch (Throwable e) {
 			logger.error("[NettyHttpServer] Exception: ", e);
 			System.exit(1);
 		}finally {

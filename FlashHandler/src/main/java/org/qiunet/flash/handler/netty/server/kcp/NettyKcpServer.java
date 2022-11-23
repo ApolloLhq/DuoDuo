@@ -94,7 +94,7 @@ public class NettyKcpServer implements INettyServer {
 			}
 			logger.error("[NettyKcpServer]  Kcp server {} is Listener on ports [{}]", serverName(), StringUtil.arraysToString(udpPorts, "", "" ,","));
 			this.channelFutures.get(0).channel().closeFuture().sync();
-		} catch (InterruptedException e) {
+		} catch (Throwable e) {
 			logger.error("[NettyKcpServer] Exception: ", e);
 			System.exit(1);
 		} finally {

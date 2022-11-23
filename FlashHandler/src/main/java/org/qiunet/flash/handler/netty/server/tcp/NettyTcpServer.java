@@ -49,7 +49,7 @@ public final class NettyTcpServer implements INettyServer {
 			this.channelFuture = bootstrap.bind(param.getPort());
 			logger.error("[NettyTcpServer]  Tcp server {} is Listener on port [{}]", serverName(), param.getPort());
 			channelFuture.channel().closeFuture().sync();
-		}catch (Exception e) {
+		}catch (Throwable e) {
 			logger.error("[NettyTcpServer] Exception: ", e);
 			System.exit(1);
 		}finally {
