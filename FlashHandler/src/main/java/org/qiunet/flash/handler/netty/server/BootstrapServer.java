@@ -31,6 +31,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.LockSupport;
 
 /**
@@ -240,7 +241,12 @@ public class BootstrapServer {
 		 * 等待服务器玩家清零
 		 */
 		private void waitForPlayerClean() {
+			AtomicInteger counter = new AtomicInteger();
 			TimerManager.instance.scheduleWithDelay(() -> {
+				if (counter.incrementAndGet() % 5 == 0) {
+					// 每10秒触发 full gc. 尽量缩减使用堆内存. 给新的进程使用.
+					System.gc();
+				}
 				if (UserOnlineManager.instance.onlineSize() > 0) {
 					this.waitForPlayerClean();
 					return;

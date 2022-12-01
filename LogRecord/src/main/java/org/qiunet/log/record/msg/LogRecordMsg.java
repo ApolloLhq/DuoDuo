@@ -5,7 +5,6 @@ import org.qiunet.log.record.enums.ILogRecordType;
 import org.qiunet.utils.exceptions.CustomException;
 
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
 /***
@@ -16,10 +15,9 @@ import java.util.function.Consumer;
  **/
 public abstract class LogRecordMsg<LogType extends Enum<LogType> & ILogRecordType<LogType>> implements ILogRecordMsg<LogType>{
 	private final List<LogRowData> dataList = Lists.newLinkedList();
-
-	private final AtomicBoolean logged = new AtomicBoolean();
 	protected final LogType eventLogType;
 	protected final long createTime;
+	private boolean appendStatus;
 
 	protected LogRecordMsg(LogType eventLogType) {
 		this.createTime = System.currentTimeMillis();
@@ -28,15 +26,16 @@ public abstract class LogRecordMsg<LogType extends Enum<LogType> & ILogRecordTyp
 
 	@Override
 	public void forEachData(Consumer<LogRowData> consumer) {
-		if (logged.compareAndSet(false, true)) {
+		if (! appendStatus) {
 			this.fillLogRecordMsg();
+			appendStatus = true;
 		}
 		this.dataList.forEach(consumer);
 	}
 
 	@Override
 	public void append(String key, Object val) {
-		if (logged.get()) {
+		if (appendStatus) {
 			throw new CustomException("Already output message!");
 		}
 		this.dataList.add(LogRowData.valueOf(key, val));

@@ -26,7 +26,8 @@ import java.util.concurrent.atomic.AtomicInteger;
  ***/
 public enum LogRecordManager {
 	instance;
-
+	// 默认的logger
+	static final String DEFAULT_LOGGER_RECORD_NAME = "logbackRecord";
 
 	public void sendLog(ILogRecordMsg msg) {
 		LogRecordManager0.instance.sendLog(msg);
@@ -85,7 +86,7 @@ public enum LogRecordManager {
 				loggers.add(instance);
 			}
 
-			if (RECORD_LOG_NAMES == null || RECORD_LOG_NAMES.isEmpty()) {
+			if (RECORD_LOG_NAMES == null || RECORD_LOG_NAMES.isEmpty() || RECORD_LOG_NAMES.contains(DEFAULT_LOGGER_RECORD_NAME)) {
 				try {
 					// 先判断有没有jar.
 					Class.forName("ch.qos.logback.classic.Logger");

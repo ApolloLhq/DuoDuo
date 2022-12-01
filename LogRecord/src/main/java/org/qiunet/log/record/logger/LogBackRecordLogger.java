@@ -74,7 +74,7 @@ public class LogBackRecordLogger implements IBasicRecordLogger {
 
 	@Override
 	public String recordLoggerName() {
-		return "logbackRecord";
+		return LogRecordManager.DEFAULT_LOGGER_RECORD_NAME;
 	}
 
 	@Override
