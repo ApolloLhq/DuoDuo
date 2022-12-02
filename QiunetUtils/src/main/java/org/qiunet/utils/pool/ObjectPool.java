@@ -7,6 +7,7 @@ import org.qiunet.utils.system.OSUtil;
 
 import java.lang.ref.WeakReference;
 import java.util.*;
+import java.util.function.Consumer;
 
 /***
  * 一个简单的对象池
@@ -15,7 +16,7 @@ import java.util.*;
  * 2022/8/15 15:29
  */
 public abstract class ObjectPool<T> {
-	private static final ThreadLocal<Map<DStack<?> , SwitchList<Node>>> DELAYED_QUEUE = ThreadLocal.withInitial(HashMap::new);
+	private static final ThreadLocal<Map<DStack<?> , SwitchList<?>>> DELAYED_QUEUE = ThreadLocal.withInitial(HashMap::new);
 	private final ThreadLocal<DStack<T>> stackThreadLocal;
 
 	public ObjectPool() {
@@ -43,7 +44,7 @@ public abstract class ObjectPool<T> {
 	 */
 	public int threadScopeSize() {
 		DStack<T> tdStack = stackThreadLocal.get();
-		int sum = tdStack.asyncRecycleMap.values().stream().mapToInt(List::size).sum();
+		int sum = tdStack.asyncRecycleMap.values().stream().mapToInt(SwitchList::size).sum();
 		return tdStack.stack.size + sum;
 	}
 	/**
@@ -60,7 +61,7 @@ public abstract class ObjectPool<T> {
 	 */
 	public int asyncThreadRecycleSize() {
 		DStack<T> tdStack = stackThreadLocal.get();
-		return tdStack.asyncRecycleMap.values().stream().mapToInt(List::size).sum();
+		return tdStack.asyncRecycleMap.values().stream().mapToInt(SwitchList::size).sum();
 	}
 
 	/**
@@ -191,7 +192,7 @@ public abstract class ObjectPool<T> {
 		/**
 		 * 异步回收的数据
 		 */
-		final Map<Thread, SwitchList<Node>> asyncRecycleMap = Maps.newConcurrentMap();
+		final Map<Thread, SwitchList<T>> asyncRecycleMap = Maps.newConcurrentMap();
 		final WeakReference<Thread> threadRef;
 		final int queueCapacityForPerThread;
 		final DLinkedList<T> stack;
@@ -234,15 +235,14 @@ public abstract class ObjectPool<T> {
 		 * 从其它线程的回收栈回收对象.
 		 */
 		private boolean scannerAllThread() {
-			for (SwitchList<Node> list : asyncRecycleMap.values()) {
+			for (SwitchList<T> list : asyncRecycleMap.values()) {
 				if (list.size() <= leastRecycleNum) {
 					continue;
 				}
 				if (this.stack.full()) {
 					break;
 				}
-				List<Node> nodes = list.renew();
-				nodes.forEach(this.stack::add);
+				list.consume(this.stack::add);
 			}
 			return ! this.stack.isEmpty();
 		}
@@ -263,8 +263,8 @@ public abstract class ObjectPool<T> {
 		 * @param obj
 		 */
 		private void asyncPush(Node<T> obj) {
-			Map<DStack<?>, SwitchList<Node>> map = DELAYED_QUEUE.get();
-			SwitchList<Node> list = map.get(this);
+			Map<DStack<?>, SwitchList<?>> map = DELAYED_QUEUE.get();
+			SwitchList<T> list = (SwitchList<T>) map.get(this);
 			Thread currentThread = Thread.currentThread();
 			if (list == null) {
 				list = new SwitchList<>();
@@ -286,41 +286,34 @@ public abstract class ObjectPool<T> {
 	 * 可以切换的list
 	 * @param <E>
 	 */
-	public static class SwitchList<E> extends AbstractList<E> {
-		private List<E> currList;
+	private static class SwitchList<E> {
 
-		public SwitchList() {
-			this.currList = new LinkedList<>();
+		Node<E> head, tail;
+
+		private int size;
+
+		public void add(Node<E> node) {
+			if (tail == null) {
+				head = tail = node;
+			}else {
+				tail.next = node;
+				tail = node;
+			}
+			size ++;
 		}
 
-		public List<E> renew() {
-			List<E> list = currList;
-			this.currList = new LinkedList<>();
-			return list;
-		}
-		@Override
-		public E get(int index) {
-			return currList.get(index);
+		public void consume(Consumer<Node<E>> consumer) {
+			Node<E> temp = head;
+			head = tail = null;
+			size = 0;
+			while (temp != null) {
+				consumer.accept(temp);
+				temp = temp.next;
+			}
 		}
 
-		@Override
 		public int size() {
-			return currList.size();
-		}
-
-		@Override
-		public List<E> subList(int fromIndex, int toIndex) {
-			return currList.subList(fromIndex, toIndex);
-		}
-
-		@Override
-		public boolean add(E e) {
-			return currList.add(e);
-		}
-
-		@Override
-		public void clear() {
-			currList.clear();
+			return size;
 		}
 	}
 }
