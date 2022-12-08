@@ -6,7 +6,8 @@ import com.google.common.collect.Maps;
 import org.qiunet.utils.system.OSUtil;
 
 import java.lang.ref.WeakReference;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 
 /***
  * 一个简单的对象池
@@ -86,7 +87,7 @@ public abstract class ObjectPool<T> {
 		DStack<T> stack;
 		T value;
 		/** 链表结构*/
-		Node<T> pre, next;
+		Node<T> next;
 
 		public Node(DStack<T> stack) {
 			this.stack = stack;
@@ -134,7 +135,6 @@ public abstract class ObjectPool<T> {
 					head = tail = node;
 				}else {
 					tail.next = node;
-					node.pre = tail;
 					tail = node;
 				}
 				node = node.next;
@@ -151,9 +151,7 @@ public abstract class ObjectPool<T> {
 				head = tail = null;
 			}else {
 				head = head.next;
-				head.pre = null;
 			}
-			temp.pre = null;
 			temp.next = null;
 			size --;
 			return temp;
