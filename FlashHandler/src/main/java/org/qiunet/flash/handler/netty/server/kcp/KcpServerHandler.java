@@ -54,7 +54,7 @@ public class KcpServerHandler extends SimpleChannelInboundHandler<MessageContent
 			// 从tcp那取到PlayerActor
 			ctx.channel().attr(ServerConstants.MESSAGE_ACTOR_KEY).set(params.getStartupContext().buildMessageActor(session));
 			PlayerActor playerActor = (PlayerActor) ctx.channel().attr(ServerConstants.MESSAGE_ACTOR_KEY).get();
-			session.addCloseListener("IKcpUsabilityLose", (session0, cause) -> {
+			session.addCloseListener("IKcpUsabilityClose", (session0, cause) -> {
 				playerActor.syncFireObserver(IKcpUsabilityChange.class, o -> o.ability(false));
 			}, false);
 		}
@@ -100,7 +100,7 @@ public class KcpServerHandler extends SimpleChannelInboundHandler<MessageContent
 
 
 			PlayerActor playerActor = UserOnlineManager.instance.getPlayerActor(kcpParamInfo.getPlayerId());
-			ChannelUtil.getSession(ctx.channel()).addCloseListener("IKcpUsabilityLose", (session, cause) -> {
+			ChannelUtil.getSession(ctx.channel()).addCloseListener("IKcpUsabilityClose", (session, cause) -> {
 				playerActor.syncFireObserver(IKcpUsabilityChange.class, o -> o.ability(false));
 			}, false);
 			// 老session踢下线

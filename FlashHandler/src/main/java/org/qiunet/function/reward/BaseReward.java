@@ -10,6 +10,8 @@ import org.qiunet.utils.args.ArgumentKey;
 import org.qiunet.utils.exceptions.CustomException;
 import org.qiunet.utils.scanner.anno.AutoWired;
 
+import java.util.Objects;
+
 /***
  * 奖励的基础类
  *
@@ -114,7 +116,7 @@ public abstract class BaseReward<Obj extends IThreadSafe & IPlayer> {
 	 */
 	public boolean canMerge(BaseReward<Obj> reward) {
 		return this.getClass() == reward.getClass()
-				&& this.getCfgId() == reward.getCfgId();
+				&& Objects.equals(this.getCfgId(), reward.getCfgId());
 	}
 	/**
 	 * 合并一个reward

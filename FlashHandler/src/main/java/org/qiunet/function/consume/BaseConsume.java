@@ -5,6 +5,8 @@ import org.qiunet.utils.thread.IThreadSafe;
 import org.qiunet.flash.handler.context.status.StatusResult;
 import org.qiunet.utils.exceptions.CustomException;
 
+import java.util.Objects;
+
 /**
  * 消耗父类
  * @param <Obj>
@@ -104,7 +106,7 @@ public abstract class BaseConsume<Obj extends IThreadSafe> {
 	 */
 	public boolean canMerge(BaseConsume<Obj> consume) {
 	 	return this.getClass() == consume.getClass()
-				&& this.getCfgId() == consume.getCfgId()
+				&& Objects.equals(this.getCfgId(), consume.getCfgId())
 				&& banReplace == consume.banReplace;
 	 }
 
