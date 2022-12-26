@@ -4,6 +4,7 @@ import com.alibaba.fastjson.annotation.JSONField;
 import com.google.common.collect.Lists;
 import org.qiunet.flash.handler.common.player.PlayerActor;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -32,6 +33,17 @@ public class Targets {
 	 */
 	private int id;
 	public Targets() {}
+
+	/**
+	 * 构造一个空的Targets.
+	 * 后面可以add到TargetContainer去
+	 * @return
+	 */
+	public static Targets valueOf() {
+		Targets targets1 = new Targets();
+		targets1.targets = new ArrayList<>();
+		return targets1;
+	}
 	/**
 	 * 获得玩家对象
 	 * @return actor

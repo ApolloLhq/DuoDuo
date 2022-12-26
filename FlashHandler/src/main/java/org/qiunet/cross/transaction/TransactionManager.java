@@ -62,7 +62,7 @@ public enum TransactionManager {
 	 */
 
 	public <Req extends ITransactionReq, Resp extends ITransactionRsp> TransactionFuture<Resp> beginTransaction(int serverId, Req req) {
-		return beginTransaction(serverId, req, 3, TimeUnit.SECONDS);
+		return beginTransaction(serverId, req, 5, TimeUnit.SECONDS);
 	}
 
 	/**

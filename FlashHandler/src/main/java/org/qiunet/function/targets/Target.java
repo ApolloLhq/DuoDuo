@@ -3,7 +3,9 @@ package org.qiunet.function.targets;
 import com.alibaba.fastjson.annotation.JSONField;
 import com.google.common.base.Preconditions;
 import org.qiunet.flash.handler.common.player.PlayerActor;
-import org.qiunet.utils.thread.ThreadPoolManager;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /***
  * 单个目标的进度管理
@@ -18,6 +20,10 @@ public class Target {
 	@JSONField(serialize = false)
 	transient Targets targets;
 	/**
+	 * 用户数据. 可以序列化的对象
+	 */
+	private Map<String, String> userdata;
+	/**
 	 * 任务目标的配置定义ID
 	 */
 	private int tid;
@@ -26,7 +32,7 @@ public class Target {
 	 */
 	private long value;
 
-	static Target valueOf(Targets targets, ITargetDef targetDef) {
+	public static Target valueOf(Targets targets, ITargetDef targetDef) {
 		Target target = new Target();
 		target.tid = targetDef.getId();
 		target.targetDef = targetDef;
@@ -67,7 +73,6 @@ public class Target {
 	 */
 	public synchronized void alterToCount(int count) {
 		// = 0 可能为gm重置任务
-		Preconditions.checkState(count >= 0);
 		if (isFinished()) {
 			return;
 		}
@@ -85,6 +90,47 @@ public class Target {
 		}
 	}
 
+	/**
+	 * 移除资深
+	 */
+	public void remove() {
+		targets.container.unWatch(this);
+		targets.getTargets().remove(this);
+	}
+
+	/**
+	 * 获得用户数据
+	 * @param key
+	 * @return
+	 */
+	public String getUserdata(String key) {
+		if (userdata == null) {
+			return null;
+		}
+		return userdata.get(key);
+	}
+
+	/**
+	 * 清理某个key
+	 * @param key
+	 */
+	public void removeUserdata(String key) {
+		if (userdata != null) {
+			userdata.remove(key);
+		}
+	}
+	/**
+	 * 增加用户数据
+	 * @param key
+	 * @param data
+	 */
+	public void addUserdata(String key, String data) {
+		if (this.userdata == null) {
+			this.userdata = new HashMap<>();
+		}
+		this.userdata.put(key, data);
+	}
+
 	@JSONField(serialize = false)
 	public boolean isFinished(){
 		return value >= targetDef.getValue();
@@ -95,19 +141,11 @@ public class Target {
 		return targetDef;
 	}
 
-	public void setTid(int tid) {
-		this.tid = tid;
-	}
-
 	public int getTid() {
 		return tid;
 	}
 
 	public long getValue() {
 		return value;
-	}
-
-	public void setValue(long value) {
-		this.value = value;
 	}
 }

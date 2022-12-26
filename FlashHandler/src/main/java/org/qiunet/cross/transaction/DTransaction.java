@@ -37,7 +37,7 @@ public final class DTransaction<REQ extends ITransactionReq, RESP extends ITrans
 		this.reqData = reqData;
 		this.serverNode = serverNode;
 
-		this.timeOutFuture = Timeout.newTimeOut(f -> this.compareAndSet(Status.INIT, Status.TIMEOUT), 2);
+		this.timeOutFuture = Timeout.newTimeOut(f -> this.compareAndSet(Status.INIT, Status.TIMEOUT), 3);
 	}
 
 	public void handler(Function<REQ, RESP> dataHandler) {

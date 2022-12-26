@@ -11,7 +11,6 @@ import org.qiunet.flash.handler.context.status.StatusResultException;
 import org.qiunet.flash.handler.handler.persistconn.IPersistConnHandler;
 import org.qiunet.flash.handler.netty.server.constants.ServerConstants;
 import org.qiunet.flash.handler.netty.transmit.ITransmitHandler;
-import org.qiunet.utils.pool.ObjectPool;
 import org.qiunet.utils.string.ToString;
 
 /**
@@ -23,21 +22,22 @@ import org.qiunet.utils.string.ToString;
 public class PersistConnPbRequestContext<RequestData extends IChannelData, P extends IMessageActor<P>>
 		extends AbstractPersistConnRequestContext<RequestData, P> {
 
-	private static final ObjectPool<PersistConnPbRequestContext> RECYCLER = new ObjectPool<PersistConnPbRequestContext>() {
-		@Override
-		public PersistConnPbRequestContext newObject(Handle<PersistConnPbRequestContext> handler) {
-			return new PersistConnPbRequestContext(handler);
-		}
-	};
-
-	private final ObjectPool.Handle<PersistConnPbRequestContext> recyclerHandle;
-
-	public PersistConnPbRequestContext(ObjectPool.Handle<PersistConnPbRequestContext> recyclerHandle) {
-		this.recyclerHandle = recyclerHandle;
-	}
+	//private static final ObjectPool<PersistConnPbRequestContext> RECYCLER = new ObjectPool<PersistConnPbRequestContext>() {
+	//	@Override
+	//	public PersistConnPbRequestContext newObject(Handle<PersistConnPbRequestContext> handler) {
+	//		return new PersistConnPbRequestContext(handler);
+	//	}
+	//};
+	//
+	//private final ObjectPool.Handle<PersistConnPbRequestContext> recyclerHandle;
+	//
+	//public PersistConnPbRequestContext(ObjectPool.Handle<PersistConnPbRequestContext> recyclerHandle) {
+	//	this.recyclerHandle = recyclerHandle;
+	//}
+	private PersistConnPbRequestContext() {};
 
 	public static PersistConnPbRequestContext valueOf(MessageContent content, Channel channel, IMessageActor messageActor) {
-		PersistConnPbRequestContext context = RECYCLER.get();
+		PersistConnPbRequestContext context = new PersistConnPbRequestContext();
 		context.init(content, channel, messageActor);
 		return context;
 	}
@@ -53,7 +53,7 @@ public class PersistConnPbRequestContext<RequestData extends IChannelData, P ext
 		this.handler = null;
 		this.channel = null;
 
-		this.recyclerHandle.recycle();
+		//this.recyclerHandle.recycle();
 	}
 
 	@Override
