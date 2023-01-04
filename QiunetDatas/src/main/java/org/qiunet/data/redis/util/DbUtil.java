@@ -15,41 +15,41 @@ public final class DbUtil {
 	 * @param key
 	 * @return
 	 */
-	private static int hashCode(Object key) {
-		int hashCode = key.hashCode();
-		if (hashCode == Integer.MIN_VALUE) {
-			hashCode += 1;
+	private static long hashCode(Object key) {
+		long hashCode;
+		if (key instanceof Number) {
+			hashCode = ((Number) key).longValue();
+		}else {
+			hashCode = key.hashCode();
 		}
 		return Math.abs(hashCode);
 	}
-
-
 	/**
 	 * 使用服务器自己的ServerId获得分表索引
 	 * @param key openId playerId 等主键ID
 	 * @return
 	 */
 	public static int getTbIndex(Object key) {
-		int groupId = ServerConfig.getServerGroupId();
-		return getTbIndex(key, groupId);
+		long code = hashCode(key);
+		return (int) (code % MAX_TABLE_FOR_TB_SPLIT);
 	}
 
-	/**
-	 * 获得分表索引
-	 * @param key id openId playerId 等主键ID
-	 * @param groupId 服务组id
-	 * @return
-	 */
-	public static int getTbIndex(Object key, int groupId) {
-		int length = ServerType.getGroupIdLength(groupId);
-		int pow = POW10_NUMS[length + 1];
-		int code = hashCode(key);
-		if (code <= pow) {
-			// 可能key 不是按照规则生成的. 直接取最后的数字即可. 否则都是0
-			return code % MAX_TABLE_FOR_TB_SPLIT;
-		}
-		return (code / pow) % MAX_TABLE_FOR_TB_SPLIT;
-	}
+	///**
+	// * 获得分表索引
+	// * @param key id openId playerId 等主键ID
+	// * @param groupId 服务组id
+	// * @return
+	// */
+	//public static int getTbIndex(Object key, int groupId) {
+	//	int length = ServerType.getGroupIdLength(groupId);
+	//	int pow = POW10_NUMS[length + 1];
+	//	int code = hashCode(key);
+	//	if (code <= pow) {
+	//		// 可能key 不是按照规则生成的. 直接取最后的数字即可. 否则都是0
+	//		return code % MAX_TABLE_FOR_TB_SPLIT;
+	//	}
+	//	return (code / pow) % MAX_TABLE_FOR_TB_SPLIT;
+	//}
 
 	 /***
 	 * 使用服务器自己的serverId合成一个唯一的id.

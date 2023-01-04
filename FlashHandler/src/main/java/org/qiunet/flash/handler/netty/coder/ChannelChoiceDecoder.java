@@ -55,17 +55,33 @@ public class ChannelChoiceDecoder extends ByteToMessageDecoder {
 				pipeline.addLast("NettyIdleCheckHandler", new NettyIdleCheckHandler());
 				pipeline.addLast("TcpServerHandler", new TcpServerHandler(param));
 				ctx.fireChannelActive();
-			}else if (Arrays.equals(POST_BYTES, bytes) || Arrays.equals(GET_BYTES, bytes)){
+			}else if (this.equals(POST_BYTES, bytes) || this.equals(GET_BYTES, bytes)){
 				pipeline.addLast("HttpServerCodec" ,new HttpServerCodec());
 				pipeline.addLast("HttpObjectAggregator", new HttpObjectAggregator(param.getMaxReceivedLength()));
 				pipeline.addLast("HttpServerHandler", new HttpServerHandler(param));
 			}else {
-				logger.error("Invalidate connection!");
+				logger.debug("Invalidate connection!");
 				ctx.close();
 			}
 			pipeline.remove(ChannelChoiceDecoder.class);
 		}finally {
 			in.resetReaderIndex();
 		}
+	}
+
+
+	/**
+	 * 对比数组. 只要符合origin即可
+	 * @param origin
+	 * @param bytes
+	 * @return
+	 */
+	private boolean equals(byte [] origin, byte [] bytes) {
+		for (int i = 0; i < origin.length; i++) {
+			if (bytes[i] != origin[i]) {
+				return false;
+			}
+		}
+		return true;
 	}
 }

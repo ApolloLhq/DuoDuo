@@ -53,5 +53,7 @@ public interface IJob {
 	 * 一定的时间偏移
 	 * @return
 	 */
-	int randRangeMillis();
+	default int randRangeMillis() {
+		return 0;
+	}
 }
