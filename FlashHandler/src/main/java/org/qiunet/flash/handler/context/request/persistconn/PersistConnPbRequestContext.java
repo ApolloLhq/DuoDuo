@@ -1,5 +1,6 @@
 package org.qiunet.flash.handler.context.request.persistconn;
 
+import com.google.common.base.Preconditions;
 import io.netty.channel.Channel;
 import org.qiunet.cross.actor.CrossPlayerActor;
 import org.qiunet.flash.handler.common.annotation.SkipDebugOut;
@@ -11,6 +12,7 @@ import org.qiunet.flash.handler.context.status.StatusResultException;
 import org.qiunet.flash.handler.handler.persistconn.IPersistConnHandler;
 import org.qiunet.flash.handler.netty.server.constants.ServerConstants;
 import org.qiunet.flash.handler.netty.transmit.ITransmitHandler;
+import org.qiunet.utils.pool.ObjectPool;
 import org.qiunet.utils.string.ToString;
 
 /**
@@ -22,22 +24,21 @@ import org.qiunet.utils.string.ToString;
 public class PersistConnPbRequestContext<RequestData extends IChannelData, P extends IMessageActor<P>>
 		extends AbstractPersistConnRequestContext<RequestData, P> {
 
-	//private static final ObjectPool<PersistConnPbRequestContext> RECYCLER = new ObjectPool<PersistConnPbRequestContext>() {
-	//	@Override
-	//	public PersistConnPbRequestContext newObject(Handle<PersistConnPbRequestContext> handler) {
-	//		return new PersistConnPbRequestContext(handler);
-	//	}
-	//};
-	//
-	//private final ObjectPool.Handle<PersistConnPbRequestContext> recyclerHandle;
-	//
-	//public PersistConnPbRequestContext(ObjectPool.Handle<PersistConnPbRequestContext> recyclerHandle) {
-	//	this.recyclerHandle = recyclerHandle;
-	//}
-	private PersistConnPbRequestContext() {};
+	private static final ObjectPool<PersistConnPbRequestContext> RECYCLER = new ObjectPool<PersistConnPbRequestContext>() {
+		@Override
+		public PersistConnPbRequestContext newObject(Handle<PersistConnPbRequestContext> handler) {
+			return new PersistConnPbRequestContext(handler);
+		}
+	};
+
+	private final ObjectPool.Handle<PersistConnPbRequestContext> recyclerHandle;
+
+	public PersistConnPbRequestContext(ObjectPool.Handle<PersistConnPbRequestContext> recyclerHandle) {
+		this.recyclerHandle = recyclerHandle;
+	}
 
 	public static PersistConnPbRequestContext valueOf(MessageContent content, Channel channel, IMessageActor messageActor) {
-		PersistConnPbRequestContext context = new PersistConnPbRequestContext();
+		PersistConnPbRequestContext context = RECYCLER.get();
 		context.init(content, channel, messageActor);
 		return context;
 	}
@@ -53,11 +54,12 @@ public class PersistConnPbRequestContext<RequestData extends IChannelData, P ext
 		this.handler = null;
 		this.channel = null;
 
-		//this.recyclerHandle.recycle();
+		this.recyclerHandle.recycle();
 	}
 
 	@Override
 	public void execute(P p) {
+		Preconditions.checkArgument(this.channel != null);
 		try {
 			this.handlerRequest();
 		}catch (Exception e) {
