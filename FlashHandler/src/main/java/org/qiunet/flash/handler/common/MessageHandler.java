@@ -41,6 +41,18 @@ public abstract class MessageHandler<H extends IMessageHandler<H>>
 	private final AtomicBoolean destroyed = new AtomicBoolean();
 
 	/**
+	 * 执行消息
+	 * @param message
+	 */
+	private void executorMessage(IMessage<H> message) {
+		try {
+			message.execute((H) this);
+		}catch (Exception e) {
+			logger.error("Message handler run exception:", e);
+		}
+	}
+
+	/**
 	 * 添加一条可以执行消息
 	 * @param msg
 	 */
@@ -50,7 +62,7 @@ public abstract class MessageHandler<H extends IMessageHandler<H>>
 			logger.error(LogUtils.dumpStack("MessageHandler ["+getIdentity()+"] 已经关闭销毁"));
 			return false;
 		}
-		executor.get().execute(() -> msg.execute((H)this));
+		executor.get().execute(() -> this.executorMessage(msg));
 		return true;
 	}
 
@@ -61,7 +73,7 @@ public abstract class MessageHandler<H extends IMessageHandler<H>>
 			return;
 		}
 
-		ThreadPoolManager.NORMAL.execute(() -> message.execute((H) this));
+		ThreadPoolManager.NORMAL.execute(() -> this.executorMessage(message));
 	}
 
 
