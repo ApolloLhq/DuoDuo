@@ -7,6 +7,7 @@ import io.netty.handler.codec.ByteToMessageDecoder;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.timeout.IdleStateHandler;
+import io.netty.util.concurrent.ScheduledFuture;
 import org.qiunet.flash.handler.context.header.IProtocolHeader;
 import org.qiunet.flash.handler.netty.server.http.handler.HttpServerHandler;
 import org.qiunet.flash.handler.netty.server.idle.NettyIdleCheckHandler;
@@ -17,6 +18,7 @@ import org.slf4j.Logger;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 消息的解析
@@ -30,6 +32,7 @@ public class ChannelChoiceDecoder extends ByteToMessageDecoder {
 	private static final byte[] POST_BYTES = {'P', 'O', 'S', 'T'};
 	private static final byte[] GET_BYTES = {'G', 'E', 'T', ' '};
 	private static final byte[] HEAD_BYTES = {'H', 'E', 'A', 'D'};
+	private ScheduledFuture<?> closeFuture;
 
 	private ChannelChoiceDecoder(ServerBootStrapParam param) {
 		this.param = param;
@@ -40,46 +43,53 @@ public class ChannelChoiceDecoder extends ByteToMessageDecoder {
 	}
 
 	@Override
+	public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
+		this.closeFuture = ctx.channel().eventLoop().schedule(() -> {
+			// 关闭那些只连接. 不发送任何协议的客户端
+			ctx.channel().close();
+		}, 20, TimeUnit.SECONDS);
+		super.channelRegistered(ctx);
+	}
+
+	@Override
 	protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
-		if (in.readableBytes() < IProtocolHeader.MAGIC_CONTENTS.length) {
-			return;
-		}
-		in.markReaderIndex();
-		try {
-			ChannelPipeline pipeline = ctx.channel().pipeline();
-			byte [] bytes = new byte[IProtocolHeader.MAGIC_CONTENTS.length];
-			in.readBytes(bytes);
-			if (param.isBanHttpServer() || Arrays.equals(IProtocolHeader.MAGIC_CONTENTS, bytes)) {
-				pipeline.addLast("TcpSocketEncoder", new TcpSocketEncoder());
-				pipeline.addLast("TcpSocketDecoder", new TcpSocketDecoder(param.getMaxReceivedLength(), param.isEncryption()));
-				pipeline.addLast("IdleStateHandler", new IdleStateHandler(param.getReadIdleCheckSeconds(), 0, 0));
-				pipeline.addLast("NettyIdleCheckHandler", new NettyIdleCheckHandler());
-				pipeline.addLast("TcpServerHandler", new TcpServerHandler(param));
-				ctx.fireChannelActive();
-			}else if (this.equals(POST_BYTES, bytes) || this.equals(GET_BYTES, bytes) || this.equals(HEAD_BYTES, bytes)){
-				pipeline.addLast("HttpServerCodec" ,new HttpServerCodec());
-				pipeline.addLast("HttpObjectAggregator", new HttpObjectAggregator(param.getMaxReceivedLength()));
-				pipeline.addLast("HttpServerHandler", new HttpServerHandler(param));
-			}else {
-				logger.debug("Invalidate connection!");
-				ctx.close();
-			}
+		ChannelPipeline pipeline = ctx.channel().pipeline();
+
+		if (param.isBanHttpServer() || this.equals(IProtocolHeader.MAGIC_CONTENTS, in)) {
+			pipeline.addLast("TcpSocketEncoder", new TcpSocketEncoder());
+			pipeline.addLast("TcpSocketDecoder", new TcpSocketDecoder(param.getMaxReceivedLength(), param.isEncryption()));
+			pipeline.addLast("IdleStateHandler", new IdleStateHandler(param.getReadIdleCheckSeconds(), 0, 0));
+			pipeline.addLast("NettyIdleCheckHandler", new NettyIdleCheckHandler());
+			pipeline.addLast("TcpServerHandler", new TcpServerHandler(param));
 			pipeline.remove(ChannelChoiceDecoder.class);
-		}finally {
-			in.resetReaderIndex();
+			ctx.fireChannelActive();
+		}else if (this.equals(POST_BYTES, in) || this.equals(GET_BYTES, in) || this.equals(HEAD_BYTES, in)){
+			pipeline.addLast("HttpServerCodec" ,new HttpServerCodec());
+			pipeline.addLast("HttpObjectAggregator", new HttpObjectAggregator(param.getMaxReceivedLength()));
+			pipeline.addLast("HttpServerHandler", new HttpServerHandler(param));
+			pipeline.remove(ChannelChoiceDecoder.class);
+		}else {
+			logger.debug("Invalidate connection!");
+			ctx.close();
 		}
+
+		closeFuture.cancel(true);
 	}
 
 
 	/**
 	 * 对比数组. 只要符合origin即可
 	 * @param origin
-	 * @param bytes
+	 * @param in
 	 * @return
 	 */
-	private boolean equals(byte [] origin, byte [] bytes) {
+	private boolean equals(byte [] origin, ByteBuf in) {
+		if (in.readableBytes() < origin.length) {
+			return false;
+		}
+
 		for (int i = 0; i < origin.length; i++) {
-			if (bytes[i] != origin[i]) {
+			if (in.getByte(i) != origin[i]) {
 				return false;
 			}
 		}

@@ -57,19 +57,24 @@ public class OfflinePlayerActor extends MessageHandler<OfflinePlayerActor> imple
 	 * @param eventData
 	 */
 	public void fireEvent(UserEventData eventData) {
-		eventData.setPlayer(this);
-		this.addMessage(a -> eventData.fireEventHandler());
+		if (! inSelfThread()) {
+			this.addMessage(a -> eventData.setPlayer(a).fireEventHandler());
+		}else {
+			eventData.setPlayer(this).fireEventHandler();
+		}
 	}
 
 	public void destroy(){
+		this.fireEvent(OfflineUserDestroyEvent.valueOf());
+
+		this.addMessage(OfflinePlayerActor::destroy0);
+	}
+	private void destroy0(){
 		if (isDestroyed()) {
 			return;
 		}
 
 		super.destroy();
-
-		this.fireEvent(OfflineUserDestroyEvent.valueOf());
-
 		UserOfflineManager.instance.remove(getPlayerId());
 		this.dataLoader.unregister();
 

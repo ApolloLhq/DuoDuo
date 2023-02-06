@@ -32,12 +32,12 @@ public enum UserOfflineManager {
 
 
 	/**
-	 * 获取一个不在线的玩家actor
+	 * 获取 或者 生成 一个不在线的玩家actor
 	 * @param playerId
 	 * @return
 	 */
 	public OfflinePlayerActor get(long playerId) {
-		return data.getIfPresent(playerId);
+		return getOrCreate(playerId);
 	}
 
 	@EventListener
