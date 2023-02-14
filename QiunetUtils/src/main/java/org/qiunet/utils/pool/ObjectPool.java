@@ -151,6 +151,9 @@ public abstract class ObjectPool<T> {
 				head = tail = null;
 			}else {
 				head = head.next;
+				if (head == null) {
+					System.out.println("=========");
+				}
 			}
 			temp.next = null;
 			size --;
@@ -211,6 +214,11 @@ public abstract class ObjectPool<T> {
 				if (this.stack.full()) {
 					break;
 				}
+
+				if (list.size() < 5) {
+					continue;
+				}
+
 				this.stack.add(list.cleanAndGetHead());
 			}
 			return ! this.stack.isEmpty();
@@ -260,7 +268,7 @@ public abstract class ObjectPool<T> {
 
 		private int size;
 
-		public void add(Node<E> node) {
+		public synchronized void add(Node<E> node) {
 			if (tail == null) {
 				head = tail = node;
 			}else {
@@ -270,7 +278,7 @@ public abstract class ObjectPool<T> {
 			size ++;
 		}
 
-		public Node<E> cleanAndGetHead() {
+		public synchronized Node<E> cleanAndGetHead() {
 			Node<E> temp = head;
 			head = tail = null;
 			size = 0;

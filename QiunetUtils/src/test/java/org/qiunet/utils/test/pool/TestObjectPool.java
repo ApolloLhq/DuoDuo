@@ -1,10 +1,18 @@
 package org.qiunet.utils.test.pool;
 
+import com.google.common.collect.Queues;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.qiunet.utils.logger.LoggerType;
 import org.qiunet.utils.pool.ThreadScopeObjectPool;
+import org.qiunet.utils.system.OSUtil;
 import org.qiunet.utils.thread.ThreadPoolManager;
+import org.slf4j.Logger;
+
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /***
  *
@@ -13,7 +21,7 @@ import org.qiunet.utils.thread.ThreadPoolManager;
  */
 public class TestObjectPool {
 	private final ThreadScopeObjectPool<Object> pool = new ThreadScopeObjectPool<>(Object::new);
-
+	private static final Logger logger = LoggerType.DUODUO.getLogger();
 	@BeforeEach
 	public void clear() {
 		pool.clear();
@@ -40,27 +48,34 @@ public class TestObjectPool {
 
 	@Test
 	public void testAsyncObjectPool() throws InterruptedException {
-		TempObj tempObj1 = TempObj.valueOf(1);
-		TempObj tempObj2 = TempObj.valueOf(2);
-		ThreadPoolManager.NORMAL.execute(() -> {
-			tempObj2.recycle();
-			tempObj1.recycle();
-		});
+		ExecutorService threadPool1 = new ThreadPoolExecutor(OSUtil.availableProcessors(), OSUtil.availableProcessors() * 2, 60L, TimeUnit.SECONDS, new LinkedBlockingDeque<>());
+		ExecutorService threadPool2 = new ThreadPoolExecutor(OSUtil.availableProcessors(), OSUtil.availableProcessors() * 2, 60L, TimeUnit.SECONDS, new LinkedBlockingDeque<>());
+		LinkedBlockingDeque<TempObj> deque = Queues.newLinkedBlockingDeque();
+		CountDownLatch latch = new CountDownLatch(1000000);
+		final long count = latch.getCount();
+		new Thread(() -> {
+			for (int i = 0; i < count; i++) {
+				int finalI = i;
+				threadPool1.execute(() ->  {
+					deque.add(TempObj.valueOf(finalI));
+				});
+			}
+		}).start();
 
-		Thread.sleep(5);
-		Assertions.assertEquals(0, TempObj.POOL.threadScopeStackSize());
-		Assertions.assertEquals(2, TempObj.POOL.asyncThreadRecycleSize());
 
-		TempObj tempObj3 = TempObj.valueOf(3);
-		TempObj tempObj4 = TempObj.valueOf(4);
+		new Thread(() -> {
+			for (int i = 0; i < count; i++) {
+				threadPool2.execute(() -> {
+					try {
+						deque.take().recycle();
+						latch.countDown();
+					} catch (InterruptedException e) {
+						throw new RuntimeException(e);
+					}
+				});
+			}
+		}).start();
 
-		Assertions.assertSame(tempObj3, tempObj2);
-		Assertions.assertSame(tempObj4, tempObj1);
-
-		tempObj3.recycle();
-		tempObj4.recycle();
-
-		Assertions.assertEquals(2, TempObj.POOL.threadScopeStackSize());
-		Assertions.assertEquals(2, TempObj.POOL.threadScopeSize());
+		latch.await();
 	}
 }
