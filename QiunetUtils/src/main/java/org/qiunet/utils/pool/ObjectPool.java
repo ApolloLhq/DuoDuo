@@ -151,9 +151,6 @@ public abstract class ObjectPool<T> {
 				head = tail = null;
 			}else {
 				head = head.next;
-				if (head == null) {
-					System.out.println("=========");
-				}
 			}
 			temp.next = null;
 			size --;

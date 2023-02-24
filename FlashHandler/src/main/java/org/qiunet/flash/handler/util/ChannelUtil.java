@@ -41,6 +41,7 @@ import org.qiunet.flash.handler.netty.server.param.adapter.message.ServerPongRes
 import org.qiunet.flash.handler.netty.transmit.ITransmitHandler;
 import org.qiunet.function.prometheus.RootRegistry;
 import org.qiunet.utils.logger.LoggerType;
+import org.qiunet.utils.prometheus.PrometheusConstants;
 import org.qiunet.utils.string.StringUtil;
 import org.qiunet.utils.string.ToString;
 import org.slf4j.Logger;
@@ -261,7 +262,7 @@ public final class ChannelUtil {
 	public static void sendHttpResponseStatusAndClose(ChannelHandlerContext ctx, HttpResponseStatus status) {
 		sendHttpResponseStatusAndClose(ctx.channel(), status);
 	}
-	private static final Counter counter = RootRegistry.instance.counter("project.exception");
+	private static final Counter counter = RootRegistry.instance.counter(PrometheusConstants.PROJECT_EXCEPTION);
 	/**
 	 * 异常处理
 	 * @param startupContext

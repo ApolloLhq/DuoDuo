@@ -18,10 +18,9 @@ import java.nio.file.Paths;
 public class TestProtoFileCreate {
 
 	public static void main(String[] args) throws Exception {
-		Path path = Paths.get("C:\\Users\\qiunet\\Desktop");
-		File file = path.toFile();
-		ClassScanner.getInstance(ScannerType.SERVER).scanner("org.qiunet");
+		Path path = Paths.get("/Users/qiunet/Desktop/proto");
+		ClassScanner.getInstance(ScannerType.GENERATOR_PROTO).scanner("org.qiunet");
 
-		GeneratorProtoFile.generator(file, ProtoGeneratorModel.ALL_IN_ONE);
+		GeneratorProtoFile.generator(path.toFile(), ProtoGeneratorModel.GROUP_BY_MODULE);
 	}
 }
