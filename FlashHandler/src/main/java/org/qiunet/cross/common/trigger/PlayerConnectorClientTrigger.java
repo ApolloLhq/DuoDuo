@@ -50,7 +50,7 @@ public class PlayerConnectorClientTrigger implements IPersistConnResponseTrigger
 				LoggerType.DUODUO_CROSS.error("Server not handler protocolId [{}]", data.getProtocolId());
 				return;
 			}
-			IMessage message = handler.getHandlerType().createRequestContext(data, session.channel(), handler, playerActor);
+			IMessage message = handler.getHandlerType().createRequestContext(data, session.channel(), handler);
 			playerActor.addMessage(message);
 			return;
 		}

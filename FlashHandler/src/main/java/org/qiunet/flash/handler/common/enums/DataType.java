@@ -39,8 +39,8 @@ public enum DataType {
 		}
 
 		@Override
-		public IPersistConnRequestContext createPersistConnRequestContext(MessageContent content, Channel channel, IHandler handler, IMessageActor messageActor) {
-			return PersistConnPbRequestContext.valueOf(content, channel, messageActor);
+		public IPersistConnRequestContext createPersistConnRequestContext(MessageContent content, Channel channel, IHandler handler) {
+			return PersistConnPbRequestContext.valueOf(content, channel);
 		}
 	},
 	/**
@@ -69,7 +69,7 @@ public enum DataType {
 	 * @param channel
 	 * @return
 	 */
-	public IPersistConnRequestContext createPersistConnRequestContext(MessageContent content, Channel channel, IHandler handler, IMessageActor messageActor) {
+	public IPersistConnRequestContext createPersistConnRequestContext(MessageContent content, Channel channel, IHandler handler) {
 		throw new IllegalStateException("Not Support");
 	}
 

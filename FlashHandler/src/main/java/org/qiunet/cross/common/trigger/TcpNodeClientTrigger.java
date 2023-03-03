@@ -35,7 +35,7 @@ public class TcpNodeClientTrigger implements IPersistConnResponseTrigger {
 		if (handler == null) {
 			LoggerType.DUODUO_CROSS.error("Server not handler protocolId [{}]", data.getProtocolId());
 		}
-		IMessage message = handler.getHandlerType().createRequestContext(data, session.channel(), handler, iMessageActor);
+		IMessage message = handler.getHandlerType().createRequestContext(data, session.channel(), handler);
 		iMessageActor.addMessage(message);
 	}
 }

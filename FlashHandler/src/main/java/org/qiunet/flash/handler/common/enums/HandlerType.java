@@ -18,7 +18,7 @@ public enum HandlerType {
 	 */
 	HTTP {
 		@Override
-		public IMessage createRequestContext(MessageContent content, Channel channel, IHandler handler, IMessageActor messageActor) {
+		public IMessage createRequestContext(MessageContent content, Channel channel, IHandler handler) {
 			throw new CustomException("Not support for that! Please do it manual!");
 		}
 	},
@@ -29,8 +29,8 @@ public enum HandlerType {
 	 */
 	PERSIST_CONN {
 		@Override
-		public IMessage createRequestContext(MessageContent content, Channel channel, IHandler handler, IMessageActor messageActor) {
-			return handler.getDataType().createPersistConnRequestContext(content, channel, handler, messageActor);
+		public IMessage createRequestContext(MessageContent content, Channel channel, IHandler handler) {
+			return handler.getDataType().createPersistConnRequestContext(content, channel, handler);
 		}
 	};
 
@@ -38,5 +38,5 @@ public enum HandlerType {
 	 * 根据handlerType 创建requestContext
 	 * @return
 	 */
-	public abstract IMessage createRequestContext(MessageContent content, Channel channel, IHandler handler, IMessageActor messageActor);
+	public abstract IMessage createRequestContext(MessageContent content, Channel channel, IHandler handler);
 }

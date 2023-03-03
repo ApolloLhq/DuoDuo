@@ -6,6 +6,7 @@ import org.qiunet.cross.actor.CrossPlayerActor;
 import org.qiunet.flash.handler.common.annotation.SkipDebugOut;
 import org.qiunet.flash.handler.common.message.MessageContent;
 import org.qiunet.flash.handler.common.player.IMessageActor;
+import org.qiunet.flash.handler.common.player.PlayerActor;
 import org.qiunet.flash.handler.context.request.data.ChannelDataMapping;
 import org.qiunet.flash.handler.context.request.data.IChannelData;
 import org.qiunet.flash.handler.context.status.StatusResultException;
@@ -37,18 +38,17 @@ public class PersistConnPbRequestContext<RequestData extends IChannelData, P ext
 		this.recyclerHandle = recyclerHandle;
 	}
 
-	public static PersistConnPbRequestContext valueOf(MessageContent content, Channel channel, IMessageActor messageActor) {
+	public static PersistConnPbRequestContext valueOf(MessageContent content, Channel channel) {
 		PersistConnPbRequestContext context = RECYCLER.get();
-		context.init(content, channel, messageActor);
+		context.init(content, channel);
 		return context;
 	}
 
-	public void init(MessageContent content, Channel channel, P messageActor) {
-		super.init(content, channel, messageActor);
+	public void init(MessageContent content, Channel channel) {
+		super.init(content, channel);
 	}
 
 	private void recycle() {
-		this.messageActor = null;
 		this.requestData = null;
 		this.attributes = null;
 		this.handler = null;
@@ -67,8 +67,9 @@ public class PersistConnPbRequestContext<RequestData extends IChannelData, P ext
 		}
 	}
 
-	@Override
-	public void handlerRequest() throws Exception {
+	private void handlerRequest() throws Exception {
+		P messageActor = (P) this.channel.attr(ServerConstants.MESSAGE_ACTOR_KEY).get();
+
 		if (getRequestData() == null) {
 			logger.error("RequestData is null for case playerId {} , protocol: {}", messageActor.getIdentity(), getHandler().getClass().getSimpleName());
 			return;

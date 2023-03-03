@@ -234,7 +234,7 @@ public final class ChannelUtil {
 			return;
 		}
 		if (channel.isActive()) {
-			IPersistConnRequestContext context = handler.getDataType().createPersistConnRequestContext(content, channel, handler, messageActor);
+			IPersistConnRequestContext context = handler.getDataType().createPersistConnRequestContext(content, channel, handler);
 			messageActor.addMessage(context);
 		}
 	}

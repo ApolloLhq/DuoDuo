@@ -13,4 +13,8 @@ public interface IHttpRequestContext<RequestData, ResponseData> extends IRequest
 
 	@Override
 	IHttpHandler<RequestData> getHandler();
+	/**
+	 * 处理请求
+	 */
+	void handlerRequest() throws Exception;
 }

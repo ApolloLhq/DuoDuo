@@ -16,13 +16,9 @@ abstract class AbstractPersistConnRequestContext<RequestData, P extends IMessage
 		extends BaseRequestContext<RequestData>
 		implements IPersistConnRequestContext<RequestData, P> {
 
-	protected P messageActor;
-
-	protected void init(MessageContent content, Channel channel, P messageActor) {
+	protected void init(MessageContent content, Channel channel) {
 		super.init(content, channel);
-		this.messageActor = Preconditions.checkNotNull(messageActor);
 	}
-
 
 	@Override
 	public Channel channel() {

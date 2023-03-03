@@ -15,9 +15,4 @@ public interface IRequestContext<RequestData> extends IRequest<RequestData> {
 	 * @return
 	 */
 	 IHandler<RequestData> getHandler();
-
-	/**
-	 * 处理请求
-	 */
-	 void handlerRequest() throws Exception;
 }
