@@ -4,7 +4,9 @@ import org.qiunet.flash.handler.common.observer.IObserverSupportOwner;
 import org.qiunet.flash.handler.common.observer.ObserverSupport;
 import org.qiunet.flash.handler.common.player.event.UserEventData;
 import org.qiunet.flash.handler.context.session.ISession;
+import org.qiunet.flash.handler.context.status.StatusResultException;
 import org.qiunet.flash.handler.netty.server.constants.CloseCause;
+import org.qiunet.flash.handler.netty.server.constants.ServerConstants;
 import org.qiunet.utils.listener.event.EventManager;
 
 /***
@@ -86,5 +88,14 @@ public abstract class AbstractUserActor<T extends AbstractUserActor<T>> extends 
 	public void destroy() {
 		super.destroy();
 		observerSupport.clear();
+	}
+
+	@Override
+	protected void exceptionHandle(Exception e) {
+		if (! (e instanceof StatusResultException)) {
+			super.exceptionHandle(e);
+			return;
+		}
+		session.channel().attr(ServerConstants.HANDLER_PARAM_KEY).get().getStartupContext().exception(session.channel(), e);
 	}
 }

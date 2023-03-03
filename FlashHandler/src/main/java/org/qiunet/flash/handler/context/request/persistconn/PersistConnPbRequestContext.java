@@ -58,22 +58,17 @@ public class PersistConnPbRequestContext<RequestData extends IChannelData, P ext
 	}
 
 	@Override
-	public void execute(P p) {
+	public void execute(P p) throws Exception {
 		Preconditions.checkArgument(this.channel != null);
 		try {
 			this.handlerRequest();
-		}catch (Exception e) {
-			if (! (e instanceof StatusResultException)) {
-				logger.error("Execute exception: " , e);
-			}
-			channel.attr(ServerConstants.HANDLER_PARAM_KEY).get().getStartupContext().exception(channel, e);
 		} finally {
 			this.recycle();
 		}
 	}
 
 	@Override
-	public void handlerRequest() throws Exception{
+	public void handlerRequest() throws Exception {
 		if (getRequestData() == null) {
 			logger.error("RequestData is null for case playerId {} , protocol: {}", messageActor.getIdentity(), getHandler().getClass().getSimpleName());
 			return;
