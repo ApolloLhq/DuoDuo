@@ -2,8 +2,11 @@ package org.qiunet.game.test.bt;
 
 import com.google.common.collect.Lists;
 import org.qiunet.flash.handler.common.MessageHandler;
+import org.qiunet.function.ai.node.IBehaviorAction;
 import org.qiunet.function.ai.node.IBehaviorNode;
 import org.qiunet.function.ai.node.root.BehaviorRootTree;
+import org.qiunet.function.ai.observer.IBHTAddNodeObserver;
+import org.qiunet.game.test.robot.action.BaseRobotAction;
 import org.qiunet.utils.args.ArgsContainer;
 import org.qiunet.utils.scanner.IApplicationContext;
 import org.qiunet.utils.scanner.IApplicationContextAware;
@@ -11,6 +14,7 @@ import org.qiunet.utils.scanner.ScannerType;
 
 import java.util.List;
 import java.util.Set;
+import java.util.function.Consumer;
 
 /***
  * 构造一个RootExecutor
@@ -36,8 +40,13 @@ public enum RobotBehaviorBuilderManager implements IApplicationContextAware {
 	 * @param obj 传入的参数
 	 * @return
 	 */
-	public <Owner extends MessageHandler<Owner>> BehaviorRootTree<Owner> buildRootExecutor(Owner obj, boolean printLog) {
+	public <Owner extends MessageHandler<Owner>> BehaviorRootTree<Owner> buildRootExecutor(Owner obj, Consumer<IBehaviorNode<Owner>> newAction, boolean printLog) {
 		BehaviorRootTree<Owner> root = new BehaviorRootTree<>(obj, printLog);
+		root.attachObserver(IBHTAddNodeObserver.class, o -> {
+			if (newAction != null) {
+				newAction.accept((IBehaviorNode<Owner>) o);
+			}
+		});
 		datas.forEach(data -> root.addChild(data.build(obj)));
 		root.initialize();
 		return root;

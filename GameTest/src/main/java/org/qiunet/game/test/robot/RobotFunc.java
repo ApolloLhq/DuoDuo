@@ -2,6 +2,7 @@ package org.qiunet.game.test.robot;
 
 import com.google.common.collect.Maps;
 import org.qiunet.flash.handler.common.IMessageHandler;
+import org.qiunet.flash.handler.common.annotation.SkipDebugOut;
 import org.qiunet.flash.handler.common.id.IProtocolId;
 import org.qiunet.flash.handler.common.message.MessageContent;
 import org.qiunet.flash.handler.common.player.AbstractMessageActor;
@@ -85,12 +86,11 @@ abstract class RobotFunc extends AbstractMessageActor<Robot> implements IMessage
 
 	protected RobotFunc(int tickMillis, boolean printLog) {
 		this.tickMillis = tickMillis;
-		this.behaviorRootTree = RobotBehaviorBuilderManager.instance.buildRootExecutor((Robot)this, printLog);
-		this.behaviorRootTree.attachObserver(IBHTAddNodeObserver.class, o -> {
-			if (IBehaviorAction.class.isAssignableFrom(o.getClass())) {
-				this.registerAction((BaseRobotAction) o);
+		this.behaviorRootTree = RobotBehaviorBuilderManager.instance.buildRootExecutor((Robot)this, node -> {
+			if (BaseRobotAction.class.isAssignableFrom(node.getClass())) {
+				this.registerAction((BaseRobotAction) node);
 			}
-		});
+		}, printLog);
 		this.tickFuture = this.scheduleMessage(h -> this.tickRun(), MathUtil.random(20, 200), TimeUnit.MILLISECONDS);
 		counter.incrementAndGet();
 	}
@@ -245,7 +245,9 @@ abstract class RobotFunc extends AbstractMessageActor<Robot> implements IMessage
 			IBehaviorAction action = actionClzMapping.get(declaringClass);
 			IChannelData realData = ProtobufDataManager.decode(protocolClass, data.byteBuffer());
 
-			logger.info("[{}] <<< {}", RobotFunc.this.getIdentity(), ToString.toString(realData));
+			if (logger.isInfoEnabled() && ! realData.getClass().isAnnotationPresent(SkipDebugOut.class)) {
+				logger.info("[{}] <<< {}", RobotFunc.this.getIdentity(), ToString.toString(realData));
+			}
 			try {
 				method.invoke(action, realData);
 			} catch (Exception e) {

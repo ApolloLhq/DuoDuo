@@ -1,5 +1,6 @@
 package org.qiunet.function.ai.node.base;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import org.qiunet.flash.handler.common.MessageHandler;
@@ -41,18 +42,30 @@ public abstract class BaseBehaviorExecutor<Owner extends MessageHandler<Owner>> 
 	@Override
 	public final IBehaviorExecutor<Owner> addChild(IBehaviorNode<Owner>... nodes) {
 		for (IBehaviorNode<Owner> node : nodes) {
+			Preconditions.checkState(node.parent() == null);
 			ReflectUtil.setField(node, "parent", this);
 			if (this.rootNode() != null) {
 				this.rootNode().syncFireObserver(IBHTAddNodeObserver.class, o -> o.addNode(node));
-			}else {
-				this.rootNode.addCompleteListener((n) -> {
-					n.syncFireObserver(IBHTAddNodeObserver.class, o -> o.addNode(node));
-				});
+				// node 被添加进来, 说明它的children 肯定也没有被添加
+				this.syncObserver(node);
 			}
 			this.nodes.add(node);
 		}
 		this.addChildNodeHandler(nodes);
 		return this;
+	}
+
+	/**
+	 * 同步触发添加事件
+	 * @param node
+	 */
+	private void syncObserver(IBehaviorNode<Owner> node) {
+		if (node instanceof IBehaviorExecutor) {
+			((IBehaviorExecutor<Owner>) node).getChildNodes().forEach(node0 -> {
+				this.rootNode().syncFireObserver(IBHTAddNodeObserver.class, o -> o.addNode(node0));
+				this.syncObserver(node0);
+			});
+		}
 	}
 
 	/**

@@ -238,7 +238,7 @@ abstract class BaseSession implements ISession {
 			return channel.newPromise();
 		}
 
-		if ( logger.isInfoEnabled() && messageActor != null && ( message.needLogger() || messageActor instanceof IRobot)) {
+		if ( logger.isInfoEnabled() && messageActor != null && message.needLogger()) {
 			logger.info("[{}] [{}({})] >>> {}", messageActor.getIdentity(), channel.attr(ServerConstants.HANDLER_TYPE_KEY).get(), channel.id().asShortText(), message.toStr());
 		}
 		ChannelFuture future;
