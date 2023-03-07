@@ -189,9 +189,6 @@ public class BootstrapServer {
 				server.shutdown();
 			}
 
-			// 停止共用的线程池
-			ServerConstants.WORKER.shutdownGracefully();
-
 			// 发送停服完成事件
 			ServerShutdownCompleteEvent.fireEvent();
 

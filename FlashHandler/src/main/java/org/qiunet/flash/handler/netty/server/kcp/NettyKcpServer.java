@@ -11,6 +11,7 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.handler.timeout.IdleStateHandler;
 import org.qiunet.flash.handler.netty.coder.KcpSocketDecoder;
 import org.qiunet.flash.handler.netty.coder.KcpSocketEncoder;
+import org.qiunet.flash.handler.netty.handler.FlushBalanceHandler;
 import org.qiunet.flash.handler.netty.server.INettyServer;
 import org.qiunet.flash.handler.netty.server.constants.ServerConstants;
 import org.qiunet.flash.handler.netty.server.idle.NettyIdleCheckHandler;
@@ -75,7 +76,8 @@ public class NettyKcpServer implements INettyServer {
 							.addLast("KcpSocketDecoder", new KcpSocketDecoder(param.getMaxReceivedLength(), param.isEncryption()))
 							.addLast("IdleStateHandler", new IdleStateHandler(param.getReadIdleCheckSeconds(), 0, 0))
 							.addLast("NettyIdleCheckHandler", new NettyIdleCheckHandler())
-							.addLast("KcpServerHandler", new KcpServerHandler(param));
+							.addLast("KcpServerHandler", new KcpServerHandler(param))
+							.addLast("FlushBalanceHandler", new FlushBalanceHandler());
 						}
 					});
 			ServerBootStrapParam.KcpBootstrapParam.Param param = this.param.getKcpParam().getParam();

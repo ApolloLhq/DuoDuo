@@ -42,4 +42,9 @@ public class KcpTokenHandler extends PersistConnPbHandler<PlayerActor, KcpTokenR
 		CrossPlayerActor player = event.getPlayer();
 		player.setKcpPrepare(event.isPrepare());
 	}
+
+	@Override
+	public boolean needAuth() {
+		return false;
+	}
 }

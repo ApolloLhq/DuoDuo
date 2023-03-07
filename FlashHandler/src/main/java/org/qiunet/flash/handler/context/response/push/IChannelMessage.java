@@ -63,7 +63,7 @@ public interface IChannelMessage<T> {
 		IProtocolHeaderType adapter = ChannelUtil.getProtocolHeaderAdapter(channel);
 		IProtocolHeader header = adapter.outHeader(this.getProtocolID(), this);
 
-		ByteBuf byteBuf = Unpooled.wrappedBuffer(header.headerByteBuf(), Unpooled.wrappedBuffer((ByteBuffer) this.byteBuffer().rewind()));
+		ByteBuf byteBuf = Unpooled.wrappedBuffer(header.headerByteBuf(), _content());
 
 		header.recycle();
 		this.recycle();
@@ -75,7 +75,22 @@ public interface IChannelMessage<T> {
 	 * @return
 	 */
 	default ByteBuf withoutHeaderByteBuf() {
-		this.recycle();
-		return Unpooled.wrappedBuffer(byteBuffer());
+		try {
+			return _content();
+		}finally {
+			this.recycle();
+		}
+	}
+
+	/**
+	 * 内容的byteBuf
+	 * 除非了解自己用的那个数据. 否则不建议调用
+	 * @return ByteBuf
+	 */
+	default ByteBuf _content() {
+		if (this instanceof BaseByteBufMessage) {
+			return ((BaseByteBufMessage<T>) this).getByteBuf();
+		}
+		return  Unpooled.wrappedBuffer((ByteBuffer) this.byteBuffer().rewind());
 	}
 }

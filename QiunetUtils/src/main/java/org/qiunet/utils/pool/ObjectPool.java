@@ -7,6 +7,7 @@ import org.qiunet.utils.system.OSUtil;
 
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 /***
@@ -170,17 +171,30 @@ public abstract class ObjectPool<T> {
 		final WeakReference<Thread> threadRef;
 		final int queueCapacityForPerThread;
 		final DLinkedList<T> stack;
+		int newNodeCount = 0;
 
 		final int maxCapacity;
+
+		final int minCount;
 		DStack(Thread thread, int maxCapacity, int queueCapacityForPerThread) {
 			this.queueCapacityForPerThread = queueCapacityForPerThread;
 			this.threadRef = new WeakReference<>(thread);
 			this.stack = new DLinkedList<>(maxCapacity);
 			this.maxCapacity = maxCapacity;
+			this.minCount = maxCapacity / 15;
 		}
 
 		Node<T> newHandler() {
+			if (this.isInitStep()) newNodeCount++;
 			return new Node<>(this);
+		}
+
+		/**
+		 * 初始阶段.
+		 * @return
+		 */
+		private boolean isInitStep() {
+			return newNodeCount < minCount;
 		}
 		/**
 		 * 弹出一个对象
@@ -188,6 +202,10 @@ public abstract class ObjectPool<T> {
 		 */
 		Node<T> pop() {
 			if (stack.isEmpty()) {
+				if (this.isInitStep()) {
+					return null;
+				}
+
 				if (! this.scannerAllThread()) {
 					return null;
 				}
@@ -207,7 +225,14 @@ public abstract class ObjectPool<T> {
 		 * 从其它线程的回收栈回收对象.
 		 */
 		private boolean scannerAllThread() {
-			for (UnreliablyList<T> list : asyncRecycleMap.values()) {
+			for(Iterator<Map.Entry<Thread, UnreliablyList<T>>> it = asyncRecycleMap.entrySet().iterator(); it.hasNext(); ) {
+				Map.Entry<Thread, UnreliablyList<T>> entry = it.next();
+				if (! entry.getKey().isAlive()) {
+					it.remove();
+					continue;
+				}
+
+				UnreliablyList<T> list = entry.getValue();
 				if (this.stack.full()) {
 					break;
 				}

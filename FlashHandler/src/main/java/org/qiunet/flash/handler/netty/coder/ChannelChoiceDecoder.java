@@ -9,6 +9,7 @@ import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.concurrent.ScheduledFuture;
 import org.qiunet.flash.handler.context.header.IProtocolHeader;
+import org.qiunet.flash.handler.netty.handler.FlushBalanceHandler;
 import org.qiunet.flash.handler.netty.server.http.handler.HttpServerHandler;
 import org.qiunet.flash.handler.netty.server.idle.NettyIdleCheckHandler;
 import org.qiunet.flash.handler.netty.server.param.ServerBootStrapParam;
@@ -16,7 +17,6 @@ import org.qiunet.flash.handler.netty.server.tcp.handler.TcpServerHandler;
 import org.qiunet.utils.logger.LoggerType;
 import org.slf4j.Logger;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -61,6 +61,7 @@ public class ChannelChoiceDecoder extends ByteToMessageDecoder {
 			pipeline.addLast("IdleStateHandler", new IdleStateHandler(param.getReadIdleCheckSeconds(), 0, 0));
 			pipeline.addLast("NettyIdleCheckHandler", new NettyIdleCheckHandler());
 			pipeline.addLast("TcpServerHandler", new TcpServerHandler(param));
+			pipeline.addLast("FlushBalanceHandler", new FlushBalanceHandler());
 			pipeline.remove(ChannelChoiceDecoder.class);
 			ctx.fireChannelActive();
 		}else if (this.equals(POST_BYTES, in) || this.equals(GET_BYTES, in) || this.equals(HEAD_BYTES, in)){

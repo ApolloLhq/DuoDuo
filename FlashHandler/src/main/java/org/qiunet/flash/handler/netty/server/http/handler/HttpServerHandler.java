@@ -19,6 +19,7 @@ import org.qiunet.flash.handler.handler.IHandler;
 import org.qiunet.flash.handler.handler.mapping.UrlRequestHandlerMapping;
 import org.qiunet.flash.handler.netty.coder.WebSocketDecoder;
 import org.qiunet.flash.handler.netty.coder.WebSocketEncoder;
+import org.qiunet.flash.handler.netty.handler.FlushBalanceHandler;
 import org.qiunet.flash.handler.netty.server.idle.NettyIdleCheckHandler;
 import org.qiunet.flash.handler.netty.server.param.ServerBootStrapParam;
 import org.qiunet.flash.handler.util.ChannelUtil;
@@ -123,6 +124,7 @@ public class HttpServerHandler  extends SimpleChannelInboundHandler<FullHttpRequ
 		pipeline.addLast("WebSocketDecoder", new WebSocketDecoder(params.getMaxReceivedLength(), params.isEncryption()));
 		pipeline.addLast("WebSocketServerHandler", new WebsocketServerHandler(params));
 		pipeline.addLast("WebSocketEncoder", new WebSocketEncoder());
+		pipeline.addLast("FlushBalanceHandler", new FlushBalanceHandler());
 
 		ctx.channel().config().setOption(ChannelOption.SO_SNDBUF, 1024 * 128);
 		ctx.channel().config().setOption(ChannelOption.SO_RCVBUF, 1024 * 128);

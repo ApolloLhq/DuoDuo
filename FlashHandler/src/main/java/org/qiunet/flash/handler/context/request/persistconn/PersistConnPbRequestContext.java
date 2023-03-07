@@ -93,7 +93,10 @@ public class PersistConnPbRequestContext<RequestData extends IChannelData, P ext
 				facadeWebSocketRequest.recycle();
 			}
 		}
-		long useTime = System.currentTimeMillis() - startTime;
-		this.getHandler().recordUseTime(useTime);
+		// 太频繁的请求不记录数据
+		if (getRequestData().debugOut()) {
+			long useTime = System.currentTimeMillis() - startTime;
+			this.getHandler().recordUseTime(useTime);
+		}
 	}
 }

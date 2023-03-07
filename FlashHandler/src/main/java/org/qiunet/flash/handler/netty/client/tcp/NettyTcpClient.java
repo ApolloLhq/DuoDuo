@@ -4,7 +4,6 @@ import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
 import io.netty.channel.epoll.Epoll;
 import io.netty.channel.epoll.EpollSocketChannel;
-import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.util.concurrent.GenericFutureListener;
@@ -17,9 +16,9 @@ import org.qiunet.flash.handler.netty.client.param.TcpClientParams;
 import org.qiunet.flash.handler.netty.client.trigger.IPersistConnResponseTrigger;
 import org.qiunet.flash.handler.netty.coder.TcpSocketDecoder;
 import org.qiunet.flash.handler.netty.coder.TcpSocketEncoder;
+import org.qiunet.flash.handler.netty.handler.FlushBalanceHandler;
 import org.qiunet.flash.handler.netty.server.constants.ServerConstants;
 import org.qiunet.flash.handler.util.NettyUtil;
-import org.qiunet.utils.async.factory.DefaultThreadFactory;
 import org.qiunet.utils.logger.LoggerType;
 
 /**
@@ -87,6 +86,7 @@ public class NettyTcpClient {
 			pipeline.addLast("TcpSocketEncoder", new TcpSocketEncoder());
 			pipeline.addLast("TcpSocketDecoder", new TcpSocketDecoder(params.getMaxReceivedLength(), params.isEncryption()));
 			pipeline.addLast(new NettyClientHandler());
+			pipeline.addLast("FlushBalanceHandler", new FlushBalanceHandler());
 		}
 	}
 

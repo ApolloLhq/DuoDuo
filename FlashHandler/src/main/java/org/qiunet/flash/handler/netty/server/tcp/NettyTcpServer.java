@@ -18,6 +18,7 @@ import org.slf4j.Logger;
  */
 public final class NettyTcpServer implements INettyServer {
 	public static final EventLoopGroup BOSS = NettyUtil.newEventLoopGroup(1, "netty-tcp-server-boss-event-loop-");
+	public static final EventLoopGroup WORKER = NettyUtil.newEventLoopGroup(0, "netty-tcp-server-worker-event-loop-");
 	private final Logger logger = LoggerType.DUODUO_FLASH_HANDLER.getLogger();
 
 	private final ServerBootStrapParam param;
@@ -35,7 +36,7 @@ public final class NettyTcpServer implements INettyServer {
 	public void run() {
 		try {
 			ServerBootstrap bootstrap = new ServerBootstrap();
-			bootstrap.group(BOSS, ServerConstants.WORKER);
+			bootstrap.group(BOSS, WORKER);
 
 			bootstrap.channel(NettyUtil.serverSocketChannelClass());
 			bootstrap.childAttr(ServerConstants.PROTOCOL_HEADER_ADAPTER, param.getProtocolHeaderType());
@@ -54,6 +55,7 @@ public final class NettyTcpServer implements INettyServer {
 			System.exit(1);
 		}finally {
 			logger.error("[NettyTcpServer] {} is shutdown! ", serverName());
+			WORKER.shutdownGracefully();
 			BOSS.shutdownGracefully();
 		}
 	}

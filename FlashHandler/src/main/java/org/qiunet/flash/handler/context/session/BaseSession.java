@@ -4,6 +4,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelPromise;
 import io.netty.util.AttributeKey;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
@@ -23,9 +24,7 @@ import org.slf4j.Logger;
 import java.nio.channels.ClosedChannelException;
 import java.util.Map;
 import java.util.StringJoiner;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /***
  *
@@ -39,14 +38,6 @@ abstract class BaseSession implements ISession {
 	 * 配置
 	 */
 	protected DSessionConfig sessionConfig = DSessionConfig.DEFAULT_CONFIG;
-	/**
-	 * 判断是否已经在计时flush
-	 */
-	private final AtomicBoolean flushScheduling = new AtomicBoolean();
-	/**
-	 * 写次数计数
-	 */
-	private final AtomicInteger counter = new AtomicInteger();
 
 	protected Channel channel;
 
@@ -74,18 +65,9 @@ abstract class BaseSession implements ISession {
 		return channel != null && channel.isActive();
 	}
 
-	/**
-	 * flush
-	 */
-	private synchronized void flush0(){
-		counter.set(0);
-		channel.flush();
-	}
-
-
 	@Override
 	public void flush() {
-		this.flush0();
+		channel.flush();
 	}
 
 	@Override
@@ -190,26 +172,7 @@ abstract class BaseSession implements ISession {
 	 * @return
 	 */
 	protected ChannelFuture doSendMessage(IChannelMessage<?> message, boolean flush) {
-		if (flush) {
-			return this.realSendMessage(message, true);
-		}
-
-		ChannelFuture future;
-		synchronized (this) {
-			future = this.realSendMessage(message, false);
-		}
-
-		if (counter.incrementAndGet() >= 10) {
-			this.flush0();
-			return future;
-		}
-
-		if (flushScheduling.compareAndSet(false, true)) {
-			// 不取消future 也没有损失.
-			channel.eventLoop().schedule(this::flush0, sessionConfig.getFlush_delay_ms(), TimeUnit.MILLISECONDS);
-			this.flushScheduling.set(false);
-		}
-		return future;
+		return this.realSendMessage(message, flush);
 	}
 
 	private static final GenericFutureListener<? extends Future<? super Void>> listener = f -> {
@@ -226,6 +189,14 @@ abstract class BaseSession implements ISession {
 	 * @return
 	 */
 	private ChannelFuture realSendMessage(IChannelMessage<?> message, boolean flush) {
+		ChannelPromise promise = channel.newPromise();
+		promise.addListener(listener);
+		channel.eventLoop().execute(() -> {
+			this.realSendMessage0(promise, message, flush);
+		});
+		return promise;
+	}
+	private void realSendMessage0(ChannelPromise promise, IChannelMessage<?> message, boolean flush) {
 		IMessageActor messageActor = getAttachObj(ServerConstants.MESSAGE_ACTOR_KEY);
 		if (! this.channel.isOpen()) {
 
@@ -238,20 +209,17 @@ abstract class BaseSession implements ISession {
 					((BaseByteBufMessage<?>) message).getByteBuf().release();
 			}
 			message.recycle();
-			return channel.newPromise();
+			return;
 		}
 
 		if ( logger.isInfoEnabled() && messageActor != null && message.debugOut()) {
 			logger.info("[{}] [{}({})] >>> {}", messageActor.getIdentity(), channel.attr(ServerConstants.HANDLER_TYPE_KEY).get(), channel.id().asShortText(), message._toString());
 		}
-		ChannelFuture future;
 		if (flush) {
-			future = this.channel.writeAndFlush(message);
+			this.channel.writeAndFlush(message, promise);
 		}else {
-			future = this.channel.write(message);
+			this.channel.write(message, promise);
 		}
-		future.addListener(listener);
-		return future;
 	}
 
 	@Override

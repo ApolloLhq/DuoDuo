@@ -23,6 +23,7 @@ import org.qiunet.flash.handler.netty.client.param.WebSocketClientParams;
 import org.qiunet.flash.handler.netty.client.trigger.IPersistConnResponseTrigger;
 import org.qiunet.flash.handler.netty.coder.WebSocketDecoder;
 import org.qiunet.flash.handler.netty.coder.WebSocketEncoder;
+import org.qiunet.flash.handler.netty.handler.FlushBalanceHandler;
 import org.qiunet.flash.handler.netty.server.constants.ServerConstants;
 import org.qiunet.flash.handler.netty.server.http.handler.WebSocketFrameToByteBufHandler;
 import org.qiunet.utils.async.factory.DefaultThreadFactory;
@@ -130,6 +131,7 @@ public class NettyWebSocketClient implements IChannelMessageSender {
 					pipeline.addLast("WebSocketDecoder", new WebSocketDecoder(params.getMaxReceivedLength(), params.isEncryption()));
 					pipeline.addLast("WebSocketServerHandler", new NettyWSClientHandler());
 					pipeline.addLast("encode", new WebSocketEncoder());
+					pipeline.addLast("FlushBalanceHandler", new FlushBalanceHandler());
 
 					ctx.channel().attr(ServerConstants.PROTOCOL_HEADER_ADAPTER).set(params.getProtocolHeaderType());
 					handshakeFuture.setSuccess();

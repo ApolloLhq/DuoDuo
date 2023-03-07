@@ -7,7 +7,6 @@ import org.qiunet.cross.actor.message.Cross2PlayerMessage;
 import org.qiunet.flash.handler.context.response.push.IChannelMessage;
 import org.qiunet.utils.logger.LoggerType;
 import org.qiunet.utils.pool.ObjectPool;
-import org.qiunet.utils.secret.CrcUtil;
 import org.slf4j.Logger;
 
 import java.nio.ByteBuffer;
@@ -31,9 +30,9 @@ public class CrossProtocolHeader implements IProtocolHeader {
 
 	private final ObjectPool.Handle<CrossProtocolHeader> recyclerHandle;
 	/**请求头固定长度*/
-	public static final int REQUEST_HEADER_LENGTH = 18;
+	public static final int REQUEST_HEADER_LENGTH = 12;
 	/**响应头固定长度*/
-	public static final int RESPONSE_HEADER_LENGTH = 18;
+	public static final int RESPONSE_HEADER_LENGTH = 12;
 
 	/**辨别 请求使用*/
 	private final byte [] magic = new byte[MAGIC_CONTENTS.length];
@@ -41,8 +40,6 @@ public class CrossProtocolHeader implements IProtocolHeader {
 	private int length;
 	// 请求的 响应的协议 id
 	private int protocolId;
-	// encryption code
-	private int crc;
 
 	private boolean flush;
 	private boolean kcp;
@@ -61,7 +58,6 @@ public class CrossProtocolHeader implements IProtocolHeader {
 		CrossProtocolHeader header = RECYCLER.get();
 		header.kcp = message instanceof Cross2PlayerMessage && ((Cross2PlayerMessage) message).isKcpChannel();
 		header.flush = message instanceof Cross2PlayerMessage && ((Cross2PlayerMessage) message).isFlush();
-		header.crc = (int) CrcUtil.getCrc32Value((ByteBuffer) message.byteBuffer().rewind());
 		// 不需要. 直接写入MAGIC_CONTENTS
 		//System.arraycopy(MAGIC_CONTENTS, 0, header.magic, 0, MAGIC_CONTENTS.length);
 		header.length = message.byteBuffer().limit();
@@ -72,9 +68,8 @@ public class CrossProtocolHeader implements IProtocolHeader {
 	public static CrossProtocolHeader valueOf(ByteBuf in, Channel channel) {
 		CrossProtocolHeader header = RECYCLER.get();
 		in.readBytes(header.magic);
-		header.length = in.readInt();
+		header.length = in.readUnsignedShort();
 		header.protocolId = in.readInt();
-		header.crc = in.readInt();
 
 		header.flush = in.readBoolean();
 		header.kcp = in.readBoolean();
@@ -87,7 +82,6 @@ public class CrossProtocolHeader implements IProtocolHeader {
 		this.flush = false;
 		this.kcp = false;
 		this.length = 0;
-		this.crc = 0;
 		recyclerHandle.recycle();
 	}
 
@@ -98,11 +92,7 @@ public class CrossProtocolHeader implements IProtocolHeader {
 
 	@Override
 	public boolean validEncryption(ByteBuffer buffer) {
-		boolean ret = (int) CrcUtil.getCrc32Value(buffer) == this.crc;
-		if (! ret) {
-			logger.error("Invalid message encryption! server is : "+ CrcUtil.getCrc32Value(buffer) +" client is "+ this.crc);
-		}
-		return ret;
+		return true;
 	}
 
 	@Override
@@ -118,7 +108,6 @@ public class CrossProtocolHeader implements IProtocolHeader {
 		return kcp;
 	}
 
-
 	@Override
 	public boolean isMagicValid(){
 		return Arrays.equals(this.magic, MAGIC_CONTENTS);
@@ -128,9 +117,8 @@ public class CrossProtocolHeader implements IProtocolHeader {
 	public  ByteBuf headerByteBuf() {
 		ByteBuf out = PooledByteBufAllocator.DEFAULT.buffer(RESPONSE_HEADER_LENGTH);
 		out.writeBytes(MAGIC_CONTENTS);
-		out.writeInt(length);
+		out.writeShort(length);
 		out.writeInt(protocolId);
-		out.writeInt(crc);
 		out.writeByte((flush ? 1 : 0));
 		out.writeByte((kcp ? 1 : 0));
 		return out;
@@ -142,7 +130,6 @@ public class CrossProtocolHeader implements IProtocolHeader {
 				"magic=" + Arrays.toString(magic) +
 				", length=" + length +
 				", protocolId=" + protocolId +
-				", encryption=" + crc +
-				'}';
+		'}';
 	}
 }

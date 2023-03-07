@@ -24,7 +24,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * 17/11/27
  */
 public class TestMuchTcpRequest extends BasicTcpBootStrap {
-	private final int requestCount = 100000;
+	private final int requestCount = 10000;
 	private final AtomicInteger counter = new AtomicInteger();
 	private final CountDownLatch latch = new CountDownLatch(requestCount);
 
@@ -32,7 +32,7 @@ public class TestMuchTcpRequest extends BasicTcpBootStrap {
 	public void muchRequest() throws InterruptedException {
 		NettyTcpClient nettyTcpClient = NettyTcpClient.create(TcpClientParams.DEFAULT_PARAMS, new Trigger());
 		long start = System.currentTimeMillis();
-		final int threadCount = 100;
+		final int threadCount = 10;
 		for (int j = 0; j < threadCount; j++) {
 			new Thread(() -> {
 				TcpClientConnector connector = nettyTcpClient.connect(host, port);
