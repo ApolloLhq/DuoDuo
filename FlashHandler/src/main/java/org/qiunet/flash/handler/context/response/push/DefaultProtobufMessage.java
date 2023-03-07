@@ -52,6 +52,17 @@ public class DefaultProtobufMessage extends BaseByteBufMessage<IChannelData> {
 		recyclerHandle.recycle();
 	}
 
+
+	@Override
+	public boolean debugOut() {
+		return message.debugOut();
+	}
+
+	@Override
+	public String _toString() {
+		return message._toString();
+	}
+
 	@Override
 	public IChannelData getContent() {
 		return message;

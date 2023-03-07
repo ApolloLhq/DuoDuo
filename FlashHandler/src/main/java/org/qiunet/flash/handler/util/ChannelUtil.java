@@ -43,7 +43,6 @@ import org.qiunet.function.prometheus.RootRegistry;
 import org.qiunet.utils.logger.LoggerType;
 import org.qiunet.utils.prometheus.PrometheusConstants;
 import org.qiunet.utils.string.StringUtil;
-import org.qiunet.utils.string.ToString;
 import org.slf4j.Logger;
 
 import java.io.IOException;
@@ -176,7 +175,7 @@ public final class ChannelUtil {
 
 			ConnectionReq connectionReq = ProtobufDataManager.decode(ConnectionReq.class, content.byteBuffer());
 			if (logger.isInfoEnabled()) {
-				logger.info("[{}] [{}({})] <<< {}", messageActor.getIdentity(), channel.attr(ServerConstants.HANDLER_TYPE_KEY).get(), channel.id().asShortText(), ToString.toString(connectionReq));
+				logger.info("[{}] [{}({})] <<< {}", messageActor.getIdentity(), channel.attr(ServerConstants.HANDLER_TYPE_KEY).get(), channel.id().asShortText(), connectionReq._toString());
 			}
 
 			if (StringUtil.isEmpty(connectionReq.getIdKey())) {
@@ -245,7 +244,7 @@ public final class ChannelUtil {
 			Class<? extends IChannelData> aClass = ChannelDataMapping.protocolClass(message.getProtocolID());
 			if (! aClass.isAnnotationPresent(SkipDebugOut.class)) {
 				IChannelData channelData = ProtobufDataManager.decode(aClass, message.byteBuffer());
-				logger.info("[{}] transmit {} data: {}", messageActor.getIdentity(), channel.attr(ServerConstants.HANDLER_TYPE_KEY).get(), ToString.toString(channelData));
+				logger.info("[{}] transmit {} data: {}", messageActor.getIdentity(), channel.attr(ServerConstants.HANDLER_TYPE_KEY).get(), channelData._toString());
 			}
 		}
 

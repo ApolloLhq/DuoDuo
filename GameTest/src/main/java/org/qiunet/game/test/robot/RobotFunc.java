@@ -2,7 +2,6 @@ package org.qiunet.game.test.robot;
 
 import com.google.common.collect.Maps;
 import org.qiunet.flash.handler.common.IMessageHandler;
-import org.qiunet.flash.handler.common.annotation.SkipDebugOut;
 import org.qiunet.flash.handler.common.id.IProtocolId;
 import org.qiunet.flash.handler.common.message.MessageContent;
 import org.qiunet.flash.handler.common.player.AbstractMessageActor;
@@ -24,7 +23,6 @@ import org.qiunet.flash.handler.netty.server.constants.ServerConstants;
 import org.qiunet.flash.handler.netty.server.param.adapter.message.StatusTipsRsp;
 import org.qiunet.function.ai.node.IBehaviorAction;
 import org.qiunet.function.ai.node.root.BehaviorRootTree;
-import org.qiunet.function.ai.observer.IBHTAddNodeObserver;
 import org.qiunet.game.test.bt.RobotBehaviorBuilderManager;
 import org.qiunet.game.test.response.ResponseMapping;
 import org.qiunet.game.test.robot.action.BaseRobotAction;
@@ -36,7 +34,6 @@ import org.qiunet.utils.async.future.DFuture;
 import org.qiunet.utils.exceptions.CustomException;
 import org.qiunet.utils.logger.LoggerType;
 import org.qiunet.utils.math.MathUtil;
-import org.qiunet.utils.string.ToString;
 import org.slf4j.Logger;
 
 import java.lang.reflect.InvocationTargetException;
@@ -245,8 +242,8 @@ abstract class RobotFunc extends AbstractMessageActor<Robot> implements IMessage
 			IBehaviorAction action = actionClzMapping.get(declaringClass);
 			IChannelData realData = ProtobufDataManager.decode(protocolClass, data.byteBuffer());
 
-			if (logger.isInfoEnabled() && ! realData.getClass().isAnnotationPresent(SkipDebugOut.class)) {
-				logger.info("[{}] <<< {}", RobotFunc.this.getIdentity(), ToString.toString(realData));
+			if (logger.isInfoEnabled() && realData.debugOut()) {
+				logger.info("[{}] <<< {}", RobotFunc.this.getIdentity(), realData._toString());
 			}
 			try {
 				method.invoke(action, realData);

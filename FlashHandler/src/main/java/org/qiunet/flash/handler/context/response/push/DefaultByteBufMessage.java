@@ -52,8 +52,13 @@ public class DefaultByteBufMessage extends BaseByteBufMessage<ByteBuf> {
 	}
 
 	@Override
-	public boolean needLogger() {
+	public boolean debugOut() {
 		return false;
+	}
+
+	@Override
+	public String _toString() {
+		return "ProtocolID: "+protocolId;
 	}
 
 	@Override
@@ -64,10 +69,5 @@ public class DefaultByteBufMessage extends BaseByteBufMessage<ByteBuf> {
 	@Override
 	public ByteBuf getContent() {
 		return byteBuf;
-	}
-
-	@Override
-	public String toStr() {
-		return "ProtocolID: "+protocolId;
 	}
 }

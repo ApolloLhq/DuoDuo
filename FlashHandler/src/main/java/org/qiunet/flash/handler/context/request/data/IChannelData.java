@@ -1,8 +1,10 @@
 package org.qiunet.flash.handler.context.request.data;
 
 import io.netty.buffer.ByteBuf;
+import org.qiunet.flash.handler.common.annotation.SkipDebugOut;
 import org.qiunet.flash.handler.common.protobuf.ProtobufDataManager;
 import org.qiunet.flash.handler.context.response.push.DefaultProtobufMessage;
+import org.qiunet.utils.string.ToString;
 
 /***
  * requestData and responseData 的父类接口.
@@ -39,6 +41,21 @@ public interface IChannelData {
 	 * 可以写这个里面
 	 */
 	default void recycle(){}
+	/**
+	 * 跳过交互输出, 输出内容为 {@link #_toString()}
+	 * @return true 打印 false 跳过
+	 */
+	default boolean debugOut() {
+		return ! getClass().isAnnotationPresent(SkipDebugOut.class);
+	}
+
+	/**
+	 * 打印该对象
+	 * @return 对象有效字符串.
+	 */
+	default String _toString(){
+		return ToString.toString(this);
+	}
 
 	/**
 	 * 得到protocolId

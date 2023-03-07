@@ -21,7 +21,6 @@ import org.qiunet.flash.handler.netty.server.kcp.shakehands.message.KcpConnectRs
 import org.qiunet.flash.handler.netty.server.param.ServerBootStrapParam;
 import org.qiunet.flash.handler.util.ChannelUtil;
 import org.qiunet.utils.logger.LoggerType;
-import org.qiunet.utils.string.ToString;
 import org.slf4j.Logger;
 
 import java.util.Objects;
@@ -80,7 +79,7 @@ public class KcpServerHandler extends SimpleChannelInboundHandler<MessageContent
 		if (content.getProtocolId() == IProtocolId.System.KCP_BIND_AUTH_REQ) {
 			KcpBindAuthReq req = ProtobufDataManager.decode(KcpBindAuthReq.class, content.byteBuffer());
 			if (logger.isInfoEnabled()) {
-				logger.info("[{}({})] <<< {}", "KCP", ctx.channel().id().asShortText(), ToString.toString(req));
+				logger.info("[{}({})] <<< {}", "KCP", ctx.channel().id().asShortText(), req._toString());
 			}
 
 			KcpPlayerTokenMapping kcpParamInfo = KcpPlayerTokenMapping.getPlayer(req.getPlayerId());
