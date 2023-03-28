@@ -14,7 +14,7 @@ import org.qiunet.utils.string.ToString;
  * @author qiunet
  * 2020-10-26 12:15
  */
-public class Cross2PlayerMessage extends BaseByteBufMessage<IChannelData> {
+public class Cross2PlayerMessage extends BaseByteBufMessage<IChannelData> implements IBroadcastNecessaryInfo<IChannelData> {
 	private static final ObjectPool<Cross2PlayerMessage> RECYCLER = new ObjectPool<Cross2PlayerMessage>(1024, 32) {
 		@Override
 		public Cross2PlayerMessage newObject(Handle<Cross2PlayerMessage> handler) {
@@ -86,7 +86,8 @@ public class Cross2PlayerMessage extends BaseByteBufMessage<IChannelData> {
 		return flush;
 	}
 
-	public boolean isKcpChannel() {
+	@Override
+	public boolean isKcp() {
 		return kcpChannel;
 	}
 

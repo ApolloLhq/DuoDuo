@@ -3,7 +3,7 @@ package org.qiunet.flash.handler.context.header;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.Channel;
-import org.qiunet.cross.actor.message.Cross2PlayerMessage;
+import org.qiunet.cross.actor.message.IBroadcastNecessaryInfo;
 import org.qiunet.flash.handler.context.response.push.IChannelMessage;
 import org.qiunet.utils.logger.LoggerType;
 import org.qiunet.utils.pool.ObjectPool;
@@ -56,8 +56,8 @@ public class CrossProtocolHeader implements IProtocolHeader {
 	 */
 	public static CrossProtocolHeader valueOf(int protocolId, IChannelMessage<?> message) {
 		CrossProtocolHeader header = RECYCLER.get();
-		header.kcp = message instanceof Cross2PlayerMessage && ((Cross2PlayerMessage) message).isKcpChannel();
-		header.flush = message instanceof Cross2PlayerMessage && ((Cross2PlayerMessage) message).isFlush();
+		header.kcp = message instanceof IBroadcastNecessaryInfo && ((IBroadcastNecessaryInfo) message).isKcp();
+		header.flush = message instanceof IBroadcastNecessaryInfo && ((IBroadcastNecessaryInfo) message).isFlush();
 		// 不需要. 直接写入MAGIC_CONTENTS
 		//System.arraycopy(MAGIC_CONTENTS, 0, header.magic, 0, MAGIC_CONTENTS.length);
 		header.length = message.byteBuffer().limit();
